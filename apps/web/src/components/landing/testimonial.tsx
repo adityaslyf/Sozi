@@ -5,12 +5,12 @@ export default function Testimonial() {
 				<div className="rounded-[28px] overflow-hidden border aspect-[3/4] md:aspect-[4/5] bg-muted" />
 				<div>
 					<blockquote className="text-3xl md:text-4xl leading-snug">
-						“I was skeptical, but Sozi has completely transformed the way I study. The summaries are clear and the flashcards are spot-on.”
+						“Sozi turned my 200‑page textbook into clear notes and practice questions. I finally feel in control before exams.”
 					</blockquote>
 					<p className="mt-6 text-sm">
-						<strong>John Smith</strong>
+						<strong>Sarah</strong>
 						<br />
-						<span className="text-primary">Head of Data</span>
+						<span className="text-primary">Psychology student</span>
 					</p>
 				</div>
 			</div>

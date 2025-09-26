@@ -4,11 +4,11 @@ export default function HowTo() {
 			<div className="mx-auto max-w-6xl px-4">
 				<h3 className="text-5xl md:text-6xl font-semibold">Map Your Success</h3>
 				<div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-10">
-					{[
-						{ n: "01", t: "Get Started", d: "Upload PDFs and notes. You're up and running in minutes." },
-						{ n: "02", t: "Customize and Configure", d: "Pick chapters, languages, and difficulty levels." },
-						{ n: "03", t: "Grow Your Knowledge", d: "Review with summaries, quizzes, and flashcards." },
-					].map((s) => (
+				{[
+					{ n: "01", t: "Upload your material", d: "PDFs, slides, and notes — Sozi processes large files quickly." },
+					{ n: "02", t: "Get instant study tools", d: "Auto summaries, flashcards, and quizzes tailored to your chapters." },
+					{ n: "03", t: "Practice and track progress", d: "Adaptive exercises and analytics keep you focused on weak areas." },
+				].map((s) => (
 						<div key={s.n} className="space-y-2">
 							<div className="text-5xl font-medium opacity-30">{s.n}</div>
 							<h4 className="font-medium">{s.t}</h4>

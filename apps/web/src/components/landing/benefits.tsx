@@ -5,22 +5,32 @@ export default function Benefits() {
 		<section id="benefits" className="py-16 md:py-24 border-t">
 			<SectionHeading
 				overline="Benefits"
-				title="We’ve cracked the code."
-				subtitle="Sozi provides real insights, without the data overload."
+				title="Study smarter, not longer."
+				subtitle="Sozi turns your materials into actionable study tools — grounded answers, concise notes, smart flashcards, and adaptive quizzes."
 			/>
 			<div className="mx-auto max-w-6xl px-4 mt-10 grid grid-cols-1 md:grid-cols-4 gap-8">
 				{[
-					"Amplify Insights",
-					"Control Your Global Presence",
-					"Remove Language Barriers",
-					"Visualize Growth",
-				].map((t, i) => (
+					{
+						t: "Instant summaries",
+						d: "Upload PDFs and get clean, chapter‑wise notes in seconds.",
+					},
+					{
+						t: "Smart flashcards",
+						d: "Auto‑generated Q&A for spaced repetition and quick review.",
+					},
+					{
+						t: "Adaptive quizzes",
+						d: "MCQs and short answers that focus on your weak spots.",
+					},
+					{
+						t: "Grounded AI chat",
+						d: "Ask anything — responses cite the exact lines from your files.",
+					},
+				].map((b, i) => (
 					<div key={i} className="space-y-2">
 						<div className="h-6 w-6 rounded bg-muted" />
-						<h3 className="font-medium">{t}</h3>
-						<p className="text-sm text-muted-foreground">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae.
-						</p>
+						<h3 className="font-medium">{b.t}</h3>
+						<p className="text-sm text-muted-foreground">{b.d}</p>
 					</div>
 				))}
 			</div>

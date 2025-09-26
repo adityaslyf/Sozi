@@ -26,7 +26,7 @@ export default function Header() {
                     </nav>
 
                     <div className="hidden md:block">
-                        <Button className="rounded-full px-5" size="lg">Learn More ↗</Button>
+                        <Button className="rounded-full px-5" size="lg">Start Now</Button>
                     </div>
 
                     <button
@@ -60,7 +60,7 @@ export default function Header() {
                             ))}
                         </div>
                         <div className="mt-6">
-                            <Button className="w-full rounded-2xl h-12 text-base">Learn More ↗</Button>
+                            <Button className="w-full rounded-2xl h-12 text-base">Start Now</Button>
                         </div>
                     </div>
                 </div>
