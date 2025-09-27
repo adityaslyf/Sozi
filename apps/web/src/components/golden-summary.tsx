@@ -449,15 +449,32 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
     }
 
     // First, check if there are existing sessions
-    await loadExistingMCQSessions();
-    
-    // If there are existing sessions, show selector
-    if (existingSessions.length > 0) {
-      setShowSessionSelector(true);
-      return;
+    try {
+      const response = await fetch(`${AUTH_CONFIG.API_BASE_URL}/workspaces/${workspaceId}/files/${fileId}/mcq/sessions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      console.log('Existing sessions check:', data);
+      
+      if (data.success && data.sessions && data.sessions.length > 0) {
+        // Update sessions and show selector
+        console.log('Found existing sessions:', data.sessions.length);
+        setExistingSessions(data.sessions);
+        setShowSessionSelector(true);
+        return;
+      } else {
+        console.log('No existing sessions found, generating new ones');
+      }
+    } catch (error) {
+      console.error('Error loading existing MCQ sessions:', error);
     }
 
-    // Otherwise, generate new MCQs directly
+    // If no existing sessions or error, generate new MCQs directly
     await generateNewMCQSession();
   };
 
@@ -500,6 +517,9 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
         setShowSessionSelector(false);
         setShowMCQModal(false);
         setShowMCQSession(true);
+        
+        // Update existing sessions list to include the new session
+        await loadExistingMCQSessions();
       } else {
         toast.error(data.message || 'Failed to generate MCQ questions');
       }
