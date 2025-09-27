@@ -1,6 +1,18 @@
 import { Button } from "@/components/ui/button";
+import { Chrome } from "lucide-react";
+import { googleAuth } from "@/lib/google-auth";
 
 export default function CTA() {
+	const handleGoogleSignup = async () => {
+		console.log("Google signup clicked");
+		try {
+			await googleAuth.signInWithPopup();
+		} catch (error) {
+			console.error("Google signup failed:", error);
+			alert("Google sign-up failed. Please try again.");
+		}
+	};
+
 	return (
 		<section id="contact" className="py-20 border-t">
 			<div className="mx-auto max-w-4xl px-4 text-center">
@@ -9,7 +21,10 @@ export default function CTA() {
 					Explore Sozi now. Upload a file and see summaries, flashcards, and quizzes in seconds.
 				</p>
 				<div className="mt-8">
-					<Button size="lg" className="rounded-full px-10 h-12 text-base">Try it — it’s free</Button>
+					<Button size="lg" className="rounded-full px-10 h-12 text-base bg-primary hover:bg-primary/90 text-white" onClick={handleGoogleSignup}>
+						<Chrome className="w-5 h-5 mr-2" />
+						Sign up with Google
+					</Button>
 				</div>
 			</div>
 		</section>

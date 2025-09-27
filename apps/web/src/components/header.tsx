@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Menu, X, Chrome } from "lucide-react";
+import { googleAuth } from "@/lib/google-auth";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
@@ -10,6 +12,22 @@ export default function Header() {
         { to: "#howto", label: "How-to" },
         { to: "#contact", label: "Contact Us" },
     ] as const;
+
+    useEffect(() => {
+        // Initialize Google Auth when component mounts
+        googleAuth.initialize().catch(console.error);
+    }, []);
+
+
+    const handleGoogleAuth = async () => {
+        console.log("Google auth clicked");
+        try {
+            await googleAuth.signInWithPopup();
+        } catch (error) {
+            console.error("Google auth failed:", error);
+            alert("Google authentication failed. Please try again.");
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
@@ -25,8 +43,11 @@ export default function Header() {
                         ))}
                     </nav>
 
-                    <div className="hidden md:block">
-                        <Button className="rounded-full px-5" size="lg">Start Now</Button>
+                    <div className="hidden md:flex items-center gap-3">
+                        <Button className="rounded-full px-5 bg-primary hover:bg-primary/90 text-white" size="lg" onClick={handleGoogleAuth}>
+                            <Chrome className="w-4 h-4 mr-2" />
+                            Sign in with Google
+                        </Button>
                     </div>
 
                     <button
@@ -34,7 +55,7 @@ export default function Header() {
                         className="md:hidden rounded-md p-2 border"
                         onClick={() => setOpen(true)}
                     >
-                        <span className="i-lucide-menu size-5" />
+                        <Menu className="size-5" />
                     </button>
                 </div>
             </div>
@@ -49,7 +70,7 @@ export default function Header() {
                                 className="rounded-md p-2 border"
                                 onClick={() => setOpen(false)}
                             >
-                                <span className="i-lucide-x size-5" />
+                                <X className="size-5" />
                             </button>
                         </div>
                         <div className="mt-6 divide-y">
@@ -59,8 +80,11 @@ export default function Header() {
                                 </a>
                             ))}
                         </div>
-                        <div className="mt-6">
-                            <Button className="w-full rounded-2xl h-12 text-base">Start Now</Button>
+                        <div className="mt-6 space-y-3">
+                            <Button className="w-full rounded-2xl h-12 text-base bg-primary hover:bg-primary/90 text-white" onClick={handleGoogleAuth}>
+                                <Chrome className="w-4 h-4 mr-2" />
+                                Sign in with Google
+                            </Button>
                         </div>
                     </div>
                 </div>

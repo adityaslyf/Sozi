@@ -23,7 +23,7 @@ export default function BigPicture() {
 						))}
 					</div>
 					<div className="mt-8">
-						<Button className="rounded-full px-6">Explore features</Button>
+						<Button variant="outline" className="rounded-full px-6">Explore features</Button>
 					</div>
 				</div>
 				<div className="rounded-[28px] overflow-hidden border">

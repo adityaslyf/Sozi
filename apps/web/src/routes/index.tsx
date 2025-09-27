@@ -15,14 +15,14 @@ export const Route = createFileRoute("/")({
 function HomeComponent() {
 	return (
 		<main className="min-h-[200vh] bg-white text-foreground">
-            <Hero />
-            <Benefits />
-            <BigPicture />
-            <Specs />
-            <Testimonial />
-            <HowTo />
-            <CTA />
-            <LandingFooter />
+			<Hero />
+			<Benefits />
+			<BigPicture />
+			<Specs />
+			<Testimonial />
+			<HowTo />
+			<CTA />
+			<LandingFooter />
 		</main>
 	);
 }

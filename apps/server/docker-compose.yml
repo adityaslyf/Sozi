@@ -5,15 +5,15 @@ services:
     image: postgres
     container_name: Sozi-postgres
     environment:
-      POSTGRES_DB: Sozi
+      POSTGRES_DB: sozi
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - Sozi_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sozi"]
       interval: 10s
       timeout: 5s
       retries: 5
