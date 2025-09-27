@@ -77,7 +77,7 @@ export function ChatInterface({ workspaceId, fileId, fileName }: ChatInterfacePr
         body: JSON.stringify({
           message: userMessage.content,
           fileId,
-          conversationHistory: messages.slice(-10) // Send last 10 messages for context
+          conversationHistory: messages.slice(-8) // Send last 8 messages for better context
         })
       });
 
@@ -189,34 +189,34 @@ export function ChatInterface({ workspaceId, fileId, fileName }: ChatInterfacePr
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Bot className="w-8 h-8 text-blue-600" />
             </div>
-            <h4 className="font-medium text-gray-900 mb-2">Start a conversation</h4>
+            <h4 className="font-medium text-gray-900 mb-2">Ask me anything</h4>
             <p className="text-sm text-gray-600 mb-4">
-              Ask me anything about {fileName ? `"${fileName}"` : 'your documents'}. I can help you understand concepts, explain details, and answer questions.
+              Quick, direct answers about {fileName ? `"${fileName}"` : 'your documents'}
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputMessage("What are the main concepts in this document?")}
+                onClick={() => setInputMessage("What is the name of the book?")}
+                className="text-xs"
+              >
+                Book name
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setInputMessage("Who is the author?")}
+                className="text-xs"
+              >
+                Author
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setInputMessage("What are the main concepts?")}
                 className="text-xs"
               >
                 Main concepts
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setInputMessage("Can you summarize the key points?")}
-                className="text-xs"
-              >
-                Key points
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setInputMessage("Explain this in simple terms")}
-                className="text-xs"
-              >
-                Explain simply
               </Button>
             </div>
           </div>
@@ -300,7 +300,7 @@ export function ChatInterface({ workspaceId, fileId, fileName }: ChatInterfacePr
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Thinking...
+                  <span className="animate-pulse">Searching...</span>
                 </div>
               </CardContent>
             </Card>
