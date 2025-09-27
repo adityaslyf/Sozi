@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Loader2, Sparkles, BookOpen, List, Edit3, Save, X, FileText, StickyNote, Plus, Trash2, Brain, Users, Zap, MessageSquare, GraduationCap, ArrowRight } from 'lucide-react';
+import { Loader2, Sparkles, BookOpen, List, Edit3, Save, X, FileText, StickyNote, Plus, Trash2, Brain, Users, Zap, MessageSquare, GraduationCap, ArrowRight, ChevronDown, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import AUTH_CONFIG from '@/config/auth';
+import { MCQSession } from './mcq-session';
 
 interface GoldenSummaryProps {
   fileId: string;
@@ -48,6 +49,44 @@ interface PersonalNote {
   updatedAt: string;
 }
 
+interface MCQQuestion {
+  id: string;
+  question: string;
+  options: Array<{
+    id: string;
+    text: string;
+    isCorrect: boolean;
+  }>;
+  explanation: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  topic: string;
+  context: string;
+}
+
+interface SessionResults {
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  timeSpent: number;
+  answers: Array<{
+    questionId: string;
+    selectedOptionId: string | null;
+    isCorrect: boolean;
+    timeSpent: number;
+  }>;
+}
+
+interface MCQSessionData {
+  id: string;
+  title: string;
+  difficulty: string;
+  focus: string;
+  sessionMode: string;
+  totalQuestions: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspaceId }) => {
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [summaryList, setSummaryList] = useState<SummaryListItem[]>([]);
@@ -64,6 +103,25 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
   const [activeTab, setActiveTab] = useState<'summary' | 'notes' | 'exercises'>('summary');
   const [showNewSummaryDialog, setShowNewSummaryDialog] = useState(false);
   const [newSummaryTitle, setNewSummaryTitle] = useState('');
+  
+  // MCQ Configuration Modal State
+  const [showMCQModal, setShowMCQModal] = useState(false);
+  const [mcqSettings, setMCQSettings] = useState({
+    difficulty: 'Easy',
+    numberOfQuestions: 20,
+    focus: 'Tailored for me',
+    studyMode: 'Study Solo', // 'Study Solo' or 'Study with Friends'
+    sessionMode: 'Practice Mode', // 'Practice Mode' or 'Exam Mode'
+    showAnswers: 'immediately' // 'immediately' or 'after session'
+  });
+
+  // MCQ Session State
+  const [showMCQSession, setShowMCQSession] = useState(false);
+  const [mcqQuestions, setMCQQuestions] = useState<MCQQuestion[]>([]);
+  const [mcqSessionId, setMCQSessionId] = useState<string>('');
+  const [sessionResults, setSessionResults] = useState<SessionResults | null>(null);
+  const [existingSessions, setExistingSessions] = useState<MCQSessionData[]>([]);
+  const [showSessionSelector, setShowSessionSelector] = useState(false);
 
   const getAuthToken = () => {
     return localStorage.getItem('accessToken');
@@ -314,6 +372,152 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
     setEditingNoteContent('');
   };
 
+  const loadExistingMCQSessions = async () => {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${AUTH_CONFIG.API_BASE_URL}/workspaces/${workspaceId}/files/${fileId}/mcq/sessions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setExistingSessions(data.sessions || []);
+      }
+    } catch (error) {
+      console.error('Error loading existing MCQ sessions:', error);
+    }
+  };
+
+  const loadMCQSession = async (sessionId: string) => {
+    const token = getAuthToken();
+    if (!token) {
+      toast.error('Please log in to load MCQ session');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch(`${AUTH_CONFIG.API_BASE_URL}/workspaces/${workspaceId}/files/${fileId}/mcq/sessions/${sessionId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Convert database questions to frontend format
+        const formattedQuestions = data.questions.map((q: { id: string; question: string; options: any; explanation: string; difficulty: string; topic: string; context?: string }) => ({
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          explanation: q.explanation,
+          difficulty: q.difficulty,
+          topic: q.topic,
+          context: q.context || ''
+        }));
+
+        setMCQQuestions(formattedQuestions);
+        setMCQSessionId(sessionId);
+        setShowSessionSelector(false);
+        setShowMCQModal(false);
+        setShowMCQSession(true);
+        toast.success('MCQ session loaded successfully!');
+      } else {
+        toast.error(data.message || 'Failed to load MCQ session');
+      }
+    } catch (error) {
+      console.error('Error loading MCQ session:', error);
+      toast.error('Failed to load MCQ session. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleStartMCQSession = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      toast.error('Please log in to start MCQ session');
+      return;
+    }
+
+    // First, check if there are existing sessions
+    await loadExistingMCQSessions();
+    
+    // If there are existing sessions, show selector
+    if (existingSessions.length > 0) {
+      setShowSessionSelector(true);
+      return;
+    }
+
+    // Otherwise, generate new MCQs directly
+    await generateNewMCQSession();
+  };
+
+  const handleMCQSessionComplete = (results: SessionResults) => {
+    setSessionResults(results);
+    toast.success(`Session completed! You scored ${results.score}/${results.totalQuestions} (${results.percentage}%)`);
+    
+    // Optional: Store results for future analytics
+    console.log('MCQ Session Results:', results);
+  };
+
+  const generateNewMCQSession = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      toast.error('Please log in to generate MCQ session');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch(`${AUTH_CONFIG.API_BASE_URL}/workspaces/${workspaceId}/files/${fileId}/mcq/generate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          difficulty: mcqSettings.difficulty,
+          numberOfQuestions: mcqSettings.numberOfQuestions,
+          focus: mcqSettings.focus
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Generated ${data.mcqs.length} questions successfully!`);
+        setMCQQuestions(data.mcqs);
+        setMCQSessionId(data.sessionId);
+        setShowSessionSelector(false);
+        setShowMCQModal(false);
+        setShowMCQSession(true);
+      } else {
+        toast.error(data.message || 'Failed to generate MCQ questions');
+      }
+    } catch (error) {
+      console.error('Error generating MCQs:', error);
+      toast.error('Failed to generate MCQ questions. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleBackFromMCQSession = () => {
+    setShowMCQSession(false);
+    setMCQQuestions([]);
+    setMCQSessionId('');
+    setSessionResults(null);
+  };
+
   // Load summary list and notes on component mount
   React.useEffect(() => {
     loadSummaryList();
@@ -364,6 +568,22 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
       }
     }).filter(Boolean);
   };
+
+  // Show MCQ Session if active
+  if (showMCQSession && mcqQuestions.length > 0) {
+    return (
+      <MCQSession
+        sessionId={mcqSessionId}
+        workspaceId={workspaceId}
+        fileId={fileId}
+        questions={mcqQuestions}
+        sessionSettings={mcqSettings}
+        fileName={fileName}
+        onBack={handleBackFromMCQSession}
+        onComplete={handleMCQSessionComplete}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -772,6 +992,7 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
                     <Button 
                       className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 border-0"
                       variant="outline"
+                      onClick={() => setShowMCQModal(true)}
                     >
                       START SESSION
                       <ArrowRight className="w-4 h-4 ml-2" />
@@ -953,6 +1174,276 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
                       <Sparkles className="w-4 h-4 mr-2" />
                       Generate Summary
                     </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MCQ Session Selector Modal */}
+      {showSessionSelector && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold">Choose MCQ Session</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSessionSelector(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Create New Session Option */}
+              <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">Create New Session</h3>
+                    <p className="text-sm text-gray-600">
+                      Generate {mcqSettings.numberOfQuestions} new {mcqSettings.difficulty.toLowerCase()} questions
+                    </p>
+                  </div>
+                  <Button
+                    onClick={generateNewMCQSession}
+                    disabled={isGenerating}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      'Create New'
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Existing Sessions */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-gray-900">Previous Sessions</h3>
+                {existingSessions.map((session: MCQSessionData) => (
+                  <div key={session.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{session.title}</h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            session.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
+                            session.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {session.difficulty}
+                          </span>
+                          <span>{session.totalQuestions} questions</span>
+                          <span>{session.focus}</span>
+                          <span>{new Date(session.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => loadMCQSession(session.id)}
+                        disabled={isGenerating}
+                        variant="outline"
+                        className="ml-4"
+                      >
+                        {isGenerating ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Start Session'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MCQ Configuration Modal */}
+      {showMCQModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Start a Multiple Choice Questions Session</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMCQModal(false)}
+                className="rounded-full w-8 h-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* File Selection */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">All PDFs selected</label>
+                <div className="relative">
+                  <select className="w-full p-3 border border-gray-200 rounded-lg bg-white appearance-none pr-10">
+                    <option>{fileName}</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Study Mode Selection */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="studyMode"
+                      value="Study Solo"
+                      checked={mcqSettings.studyMode === 'Study Solo'}
+                      onChange={(e) => setMCQSettings({...mcqSettings, studyMode: e.target.value})}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <span className="font-medium text-gray-900">Study Solo</span>
+                  </label>
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="studyMode"
+                      value="Study with Friends"
+                      checked={mcqSettings.studyMode === 'Study with Friends'}
+                      onChange={(e) => setMCQSettings({...mcqSettings, studyMode: e.target.value})}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-medium text-gray-900">Study with Friends</span>
+                      <p className="text-xs text-gray-500">Invite friends to join a session</p>
+                      <p className="text-xs text-gray-500">* they don't need an account</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Settings Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">Settings</h3>
+                  <Settings className="w-4 h-4 text-gray-400" />
+                </div>
+
+                {/* Difficulty */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Select difficulty of the questions</label>
+                  <div className="relative">
+                    <select 
+                      value={mcqSettings.difficulty}
+                      onChange={(e) => setMCQSettings({...mcqSettings, difficulty: e.target.value})}
+                      className="w-full p-3 border border-gray-200 rounded-lg bg-white appearance-none pr-10"
+                    >
+                      <option value="Easy">🟢 Easy</option>
+                      <option value="Medium">🟡 Medium</option>
+                      <option value="Hard">🔴 Hard</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* Number of Questions */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Select the number of questions</label>
+                  <div className="relative">
+                    <select 
+                      value={mcqSettings.numberOfQuestions}
+                      onChange={(e) => setMCQSettings({...mcqSettings, numberOfQuestions: parseInt(e.target.value)})}
+                      className="w-full p-3 border border-gray-200 rounded-lg bg-white appearance-none pr-10"
+                    >
+                      <option value={10}>10</option>
+                      <option value={15}>15</option>
+                      <option value={20}>20</option>
+                      <option value={25}>25</option>
+                      <option value={30}>30</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* Focus */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Select Focus</label>
+                  <div className="relative">
+                    <select 
+                      value={mcqSettings.focus}
+                      onChange={(e) => setMCQSettings({...mcqSettings, focus: e.target.value})}
+                      className="w-full p-3 border border-gray-200 rounded-lg bg-white appearance-none pr-10"
+                    >
+                      <option value="Tailored for me">Tailored for me</option>
+                      <option value="All topics">All topics</option>
+                      <option value="Weak areas">Weak areas</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500">"Tailored for me" includes unanswered exercises and ones you've struggled with.</p>
+                </div>
+              </div>
+
+              {/* Session Mode */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="sessionMode"
+                      value="Practice Mode"
+                      checked={mcqSettings.sessionMode === 'Practice Mode'}
+                      onChange={(e) => setMCQSettings({...mcqSettings, sessionMode: e.target.value})}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-medium text-gray-900">Practice Mode</span>
+                      <p className="text-xs text-gray-500">Show answers immediately</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="sessionMode"
+                      value="Exam Mode"
+                      checked={mcqSettings.sessionMode === 'Exam Mode'}
+                      onChange={(e) => setMCQSettings({...mcqSettings, sessionMode: e.target.value})}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-medium text-gray-900">Exam Mode</span>
+                      <p className="text-xs text-gray-500">Show answers after session</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Session Summary */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  Your session will contain <span className="font-semibold">{mcqSettings.numberOfQuestions} questions</span>
+                </p>
+              </div>
+
+              {/* Start Button */}
+              <div className="flex justify-end pt-4">
+                <Button 
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 text-base font-medium"
+                  onClick={handleStartMCQSession}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating Questions...
+                    </>
+                  ) : (
+                    'Start'
                   )}
                 </Button>
               </div>
