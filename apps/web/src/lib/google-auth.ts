@@ -90,12 +90,12 @@ export class GoogleAuth {
   }
 
   private handleCredentialResponse(response: CredentialResponse): void {
-    console.log('Google OAuth Response:', response);
+    // Process Google OAuth response
     
     // Decode the JWT token to get user info
     try {
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      console.log('User Info:', payload);
+      // User info decoded from JWT
       
       // Here you would typically send this to your backend
       this.sendTokenToBackend(response.credential, payload);
@@ -106,7 +106,7 @@ export class GoogleAuth {
 
   private async sendTokenToBackend(token: string, userInfo: any): Promise<void> {
     try {
-      console.log('🔄 Sending authentication to backend...');
+      // Sending authentication to backend
       
       const response = await fetch(AUTH_CONFIG.API_BASE_URL + AUTH_CONFIG.GOOGLE_AUTH_ENDPOINT, {
         method: 'POST',
@@ -123,7 +123,7 @@ export class GoogleAuth {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        console.log('✅ Authentication successful:', data);
+        // Authentication successful
         this.handleSuccessfulLogin(data);
       } else {
         console.error('❌ Backend authentication failed:', data);
@@ -136,7 +136,7 @@ export class GoogleAuth {
   }
 
   private handleSuccessfulLogin(data: any): void {
-    console.log('💾 Storing user session data...');
+    // Store user session data
     
     // Store JWT tokens securely
     if (data.tokens) {
@@ -157,7 +157,7 @@ export class GoogleAuth {
     
     // Show success message
     const userName = data.user?.name || data.name || 'User';
-    console.log(`🎉 Welcome ${userName}! Login successful.`);
+    // Login successful, show welcome message
     
     // Show success toast and redirect
     toast.success(`Welcome ${userName}! Redirecting to your workspaces...`);
@@ -170,20 +170,15 @@ export class GoogleAuth {
 
   public async signIn(): Promise<void> {
     // Check if we have a real Google Client ID
-    console.log('Current Google Client ID:', GOOGLE_CLIENT_ID);
-    console.log('Current origin:', window.location.origin);
-    
+    // Check if Google Client ID is configured for production
     if (GOOGLE_CLIENT_ID === 'demo-client-id.googleusercontent.com' || !GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('demo')) {
-      console.log('Using demo login because no real Google Client ID is configured');
+      // Using demo login because no real Google Client ID is configured
       toast.info('Demo Mode: Using simulated login. Configure VITE_GOOGLE_CLIENT_ID for real Google OAuth.');
       this.handleDemoLogin();
       return;
     }
 
-    console.log('🔍 Google OAuth Debug Info:');
-    console.log('- Client ID:', GOOGLE_CLIENT_ID);
-    console.log('- Origin:', window.location.origin);
-    console.log('- Make sure http://localhost:3001 is authorized in Google Cloud Console!');
+    // Google OAuth configuration check
 
     try {
       await this.initialize();
@@ -227,7 +222,7 @@ export class GoogleAuth {
       family_name: 'User',
     };
 
-    console.log('Demo login successful:', demoUser);
+    // Demo login successful
     
     toast.success(`Demo Login: ${demoUser.name}`, {
       description: 'Using simulated authentication for demonstration purposes.',
@@ -292,7 +287,7 @@ export class GoogleAuth {
    * Sign out user
    */
   public signOut(): void {
-    console.log('🔓 Signing out user...');
+    // Sign out user
     
     // Clear all stored data
     localStorage.removeItem('accessToken');
@@ -303,7 +298,7 @@ export class GoogleAuth {
     // Dispatch sign out event
     window.dispatchEvent(new CustomEvent('userSignedOut'));
     
-    console.log('✅ User signed out successfully');
+    // User signed out successfully
     
     // Optional: Reload page or redirect
     // window.location.reload();
@@ -336,7 +331,7 @@ export class GoogleAuth {
         // Update tokens
         localStorage.setItem('accessToken', data.tokens.accessToken);
         localStorage.setItem('refreshToken', data.tokens.refreshToken);
-        console.log('✅ Token refreshed successfully');
+        // Token refreshed successfully
         return true;
       } else {
         console.error('❌ Token refresh failed:', data);

@@ -49,7 +49,7 @@ export default function Header() {
 
 
     const handleGoogleAuth = async () => {
-        console.log("Google auth clicked");
+        // Trigger Google authentication
         try {
             await googleAuth.signInWithPopup();
         } catch (error) {

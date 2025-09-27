@@ -343,7 +343,7 @@ export default function WorkspaceManager() {
 									<Button 
 										size="sm"
 										onClick={() => {
-											console.log('Navigating to workspace:', workspace.id);
+											// Navigate to workspace
 											navigate({ 
 												to: '/workspaces/$workspaceId', 
 												params: { workspaceId: workspace.id } 

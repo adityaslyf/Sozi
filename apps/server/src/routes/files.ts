@@ -253,7 +253,7 @@ router.post("/:workspaceId/search", authenticateUser, async (req: any, res) => {
 		const { query, limit = 5 } = req.body;
 		const userId = req.user.userId;
 
-		console.log(`🔍 Search request: "${query}" in workspace ${workspaceId}`);
+		// Processing search request
 
 		if (!query || query.trim().length === 0) {
 			return res.status(400).json({
@@ -273,7 +273,7 @@ router.post("/:workspaceId/search", authenticateUser, async (req: any, res) => {
 
 		const results = await DocumentService.searchSimilarDocuments(query, workspaceId, limit);
 
-		console.log(`✅ Search completed: found ${results.length} results`);
+		// Search completed successfully
 
 		res.json({
 			success: true,
@@ -323,8 +323,7 @@ async function processDocumentAsync(
 		const maxTimeoutMs = 45 * 60 * 1000; // 45 minutes max
 		const timeoutMs = Math.min(baseTimeoutMs + (fileSizeMB * perMBTimeoutMs), maxTimeoutMs);
 		
-		console.log(`⏰ Starting document processing for ${fileName} (${fileSizeMB.toFixed(2)} MB)`);
-		console.log(`⏰ Timeout set to ${Math.round(timeoutMs/1000)}s (${Math.round(timeoutMs/60000)} minutes)`);
+		// Starting document processing with dynamic timeout
 		
 		await Promise.race([
 			DocumentService.processDocument(filePath, fileName, fileId, workspaceId),
@@ -336,13 +335,13 @@ async function processDocumentAsync(
 		// Update status to ready
 		await FileService.updateFileStatus(fileId, "ready");
 
-		console.log(`✅ Document processing completed for ${fileName}`);
+		// Document processing completed successfully
 	} catch (error) {
 		console.error(`❌ Document processing failed for ${fileName}:`, error);
 		
 		// Check if it's a timeout error and if processing might have actually succeeded
 		if (error.message && error.message.includes("timeout")) {
-			console.log(`⚠️ Processing timed out, checking if embeddings were actually stored...`);
+			// Processing timed out, checking if embeddings were stored
 			
 			try {
 				// Check if any embeddings exist for this file in Pinecone
@@ -352,12 +351,12 @@ async function processDocumentAsync(
 				);
 				
 				if (hasEmbeddings) {
-					console.log(`✅ Found embeddings for ${fileName} despite timeout - marking as ready`);
+					// Found embeddings despite timeout - marking as ready
 					await FileService.updateFileStatus(fileId, "ready");
 					return;
 				}
 			} catch (searchError) {
-				console.log(`⚠️ Could not verify embeddings existence:`, searchError.message);
+				// Could not verify embeddings existence
 			}
 		}
 		

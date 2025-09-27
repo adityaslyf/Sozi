@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Chrome } from "lucide-react";
 import { googleAuth } from "@/lib/google-auth";
+import { toast } from "sonner";
 
 export default function CTA() {
 	const handleGoogleSignup = async () => {
-		console.log("Google signup clicked");
+		// Trigger Google signup
 		try {
 			await googleAuth.signInWithPopup();
 		} catch (error) {
 			console.error("Google signup failed:", error);
-			alert("Google sign-up failed. Please try again.");
+			toast.error("Google sign-up failed. Please try again.");
 		}
 	};
 

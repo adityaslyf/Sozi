@@ -4,7 +4,9 @@ import express from "express";
 import authRoutes from "./routes/auth.js";
 import workspaceRoutes from "./routes/workspaces.js";
 import fileRoutes from "./routes/files.js";
+import summaryRoutes from "./routes/summaries.js";
 import { DocumentService } from "./services/documentService.js";
+import { SummaryService } from "./services/summaryService.js";
 
 const app = express();
 
@@ -36,16 +38,22 @@ app.use("/workspaces", workspaceRoutes);
 // File routes (nested under workspaces)
 app.use("/workspaces", fileRoutes);
 
+// Summary routes (nested under workspaces)
+app.use("/workspaces", summaryRoutes);
+
 const port = process.env.PORT || 3000;
 
-// Initialize DocumentService with NVIDIA embeddings
+// Initialize services
 async function initializeServer() {
 	try {
 		await DocumentService.initialize();
 		console.log("✅ DocumentService initialized successfully");
+		
+		await SummaryService.initialize();
+		console.log("✅ SummaryService initialized successfully");
 	} catch (error) {
-		console.error("❌ Failed to initialize DocumentService:", error);
-		console.log("⚠️ Server will continue but document processing will be disabled");
+		console.error("❌ Failed to initialize services:", error);
+		console.log("⚠️ Server will continue but some features may be disabled");
 	}
 }
 
@@ -55,6 +63,7 @@ app.listen(port, async () => {
 	console.log(`🔐 Auth endpoint: http://localhost:${port}/auth`);
 	console.log(`📁 Workspaces endpoint: http://localhost:${port}/workspaces`);
 	console.log(`📄 File upload endpoint: http://localhost:${port}/workspaces/:id/files`);
+	console.log(`📝 Summary endpoint: http://localhost:${port}/workspaces/:id/files/:fileId/summary`);
 	
 	// Initialize document service
 	await initializeServer();

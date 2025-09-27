@@ -226,7 +226,7 @@ export class DocumentService {
 	static async extractTextFromFile(filePath: string): Promise<string> {
 		const ext = path.extname(filePath).toLowerCase();
 		
-		console.log(`📁 Extracting text from file: ${filePath} (extension: ${ext || 'none'})`);
+		// Extracting text from file
 		
 		switch (ext) {
 			case '.pdf':
@@ -253,7 +253,7 @@ export class DocumentService {
 			throw new Error("DocumentService not initialized");
 		}
 
-		console.log(`📄 Processing document: ${fileName}`);
+		// Processing document for embeddings
 
 		try {
 			// Extract text from file
@@ -371,7 +371,7 @@ export class DocumentService {
 			throw error;
 		}
 
-		console.log(`✅ Document processing completed for ${fileName}`);
+		// Document processing completed
 	}
 
 	/**

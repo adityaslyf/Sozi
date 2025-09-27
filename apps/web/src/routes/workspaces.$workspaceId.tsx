@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, Link } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Folder } from 'lucide-react';
 import { googleAuth } from '@/lib/google-auth';
@@ -7,6 +7,7 @@ import AUTH_CONFIG from '@/config/auth';
 import { toast } from 'sonner';
 import FileUpload from '@/components/file-upload';
 import FileList from '@/components/file-list';
+import GoldenSummary from '@/components/golden-summary';
 
 interface Workspace {
 	id: string;
@@ -21,22 +22,14 @@ function WorkspaceDetail() {
 	const [workspace, setWorkspace] = useState<Workspace | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
+	const [selectedFile, setSelectedFile] = useState<{ id: string; name: string } | null>(null);
 
 	// Check if user is logged in
 	const isLoggedIn = googleAuth.isLoggedIn();
 
-	// Debug logging
-	console.log('WorkspaceDetail component loaded, workspaceId:', workspaceId);
+	// Component initialization
 
-	useEffect(() => {
-		if (isLoggedIn && workspaceId) {
-			fetchWorkspace();
-		} else {
-			setLoading(false);
-		}
-	}, [isLoggedIn, workspaceId]);
-
-	const fetchWorkspace = async () => {
+	const fetchWorkspace = useCallback(async () => {
 		try {
 			const token = googleAuth.getAccessToken();
 			
@@ -62,11 +55,27 @@ function WorkspaceDetail() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [workspaceId]);
+
+	useEffect(() => {
+		if (isLoggedIn && workspaceId) {
+			fetchWorkspace();
+		} else {
+			setLoading(false);
+		}
+	}, [isLoggedIn, workspaceId, fetchWorkspace]);
 
 	const handleUploadComplete = () => {
 		// Trigger refresh of file list
 		setRefreshTrigger(prev => prev + 1);
+	};
+
+	const handleViewSummary = (fileId: string, fileName: string) => {
+		setSelectedFile({ id: fileId, name: fileName });
+	};
+
+	const handleBackToFiles = () => {
+		setSelectedFile(null);
 	};
 
 	if (!isLoggedIn) {
@@ -131,29 +140,52 @@ function WorkspaceDetail() {
 				</div>
 
 				{/* Content */}
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-					{/* File Upload */}
+				{selectedFile ? (
+					/* Summary View */
 					<div className="space-y-6">
-						<div>
-							<h2 className="text-xl font-semibold mb-4">Upload Materials</h2>
-							<FileUpload 
-								workspaceId={workspaceId} 
-								onUploadComplete={handleUploadComplete}
-							/>
+						<div className="flex items-center gap-4 mb-6">
+							<Button variant="outline" onClick={handleBackToFiles}>
+								<ArrowLeft className="w-4 h-4 mr-2" />
+								Back to Files
+							</Button>
+							<div>
+								<h2 className="text-xl font-semibold">Golden Summary</h2>
+								<p className="text-gray-600">{selectedFile.name}</p>
+							</div>
 						</div>
+						<GoldenSummary 
+							fileId={selectedFile.id}
+							fileName={selectedFile.name}
+							workspaceId={workspaceId}
+						/>
 					</div>
+				) : (
+					/* File Management View */
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+						{/* File Upload */}
+						<div className="space-y-6">
+							<div>
+								<h2 className="text-xl font-semibold mb-4">Upload Materials</h2>
+								<FileUpload 
+									workspaceId={workspaceId} 
+									onUploadComplete={handleUploadComplete}
+								/>
+							</div>
+						</div>
 
-					{/* File List */}
-					<div className="space-y-6">
-						<div>
-							<h2 className="text-xl font-semibold mb-4">Study Materials</h2>
-							<FileList 
-								workspaceId={workspaceId} 
-								refreshTrigger={refreshTrigger}
-							/>
+						{/* File List */}
+						<div className="space-y-6">
+							<div>
+								<h2 className="text-xl font-semibold mb-4">Study Materials</h2>
+								<FileList 
+									workspaceId={workspaceId} 
+									refreshTrigger={refreshTrigger}
+									onViewSummary={handleViewSummary}
+								/>
+							</div>
 						</div>
 					</div>
-				</div>
+				)}
 			</div>
 		</div>
 	);

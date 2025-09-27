@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { File, Trash2, Download, Calendar, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { File, Trash2, Download, Calendar, AlertCircle, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { googleAuth } from "@/lib/google-auth";
 import AUTH_CONFIG from "@/config/auth";
 import { toast } from "sonner";
@@ -18,17 +18,14 @@ interface FileItem {
 interface FileListProps {
 	workspaceId: string;
 	refreshTrigger?: number;
+	onViewSummary?: (fileId: string, fileName: string) => void;
 }
 
-export default function FileList({ workspaceId, refreshTrigger }: FileListProps) {
+export default function FileList({ workspaceId, refreshTrigger, onViewSummary }: FileListProps) {
 	const [files, setFiles] = useState<FileItem[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		fetchFiles();
-	}, [workspaceId, refreshTrigger]);
-
-	const fetchFiles = async () => {
+	const fetchFiles = useCallback(async () => {
 		try {
 			const token = googleAuth.getAccessToken();
 			
@@ -54,7 +51,11 @@ export default function FileList({ workspaceId, refreshTrigger }: FileListProps)
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [workspaceId]);
+
+	useEffect(() => {
+		fetchFiles();
+	}, [workspaceId, refreshTrigger, fetchFiles]);
 
 	const handleDeleteFile = async (fileId: string, fileName: string) => {
 		// Show confirmation toast
@@ -199,15 +200,26 @@ export default function FileList({ workspaceId, refreshTrigger }: FileListProps)
 
 							<div className="flex gap-2">
 								{file.status === 'ready' && (
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => window.open(file.url, '_blank')}
-										className="flex items-center gap-1"
-									>
-										<Download className="w-3 h-3" />
-										View
-									</Button>
+									<>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => onViewSummary?.(file.id, file.name)}
+											className="flex items-center gap-1 text-yellow-600 hover:text-yellow-700"
+										>
+											<Sparkles className="w-3 h-3" />
+											Summary
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => window.open(file.url, '_blank')}
+											className="flex items-center gap-1"
+										>
+											<Download className="w-3 h-3" />
+											View
+										</Button>
+									</>
 								)}
 								<Button
 									variant="outline"
