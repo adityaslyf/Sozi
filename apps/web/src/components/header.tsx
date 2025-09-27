@@ -2,12 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Chrome, LogOut, User } from "lucide-react";
-import { googleAuth } from "@/lib/google-auth";
+import { googleAuth, type AuthUser } from "@/lib/google-auth";
 import { toast } from "sonner";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const links = [
@@ -28,8 +28,10 @@ export default function Header() {
         setIsLoggedIn(loggedIn);
 
         // Listen for login/logout events
-        const handleLogin = (event: CustomEvent) => {
-            setUser(event.detail.user || event.detail);
+        const handleLogin = (event: CustomEvent<{ user?: AuthUser } | AuthUser>) => {
+            const detail = event.detail as { user?: AuthUser } | AuthUser;
+            const authUser: AuthUser | undefined = (detail as { user?: AuthUser })?.user || (detail as AuthUser);
+            setUser(authUser ?? null);
             setIsLoggedIn(true);
         };
 
@@ -79,8 +81,8 @@ export default function Header() {
                     <div className="hidden md:flex items-center gap-3">
                         {isLoggedIn ? (
                             <>
-                                <Link to="/workspaces" className="text-sm hover:opacity-70">
-                                    My Workspaces
+                                <Link to="/dashboard" className="text-sm hover:opacity-70">
+                                    Dashboard
                                 </Link>
                                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
                                     <User className="w-4 h-4" />
@@ -140,11 +142,11 @@ export default function Header() {
                                         </div>
                                     </div>
                                     <Link 
-                                        to="/workspaces" 
+                                        to="/dashboard" 
                                         className="block w-full p-3 text-center rounded-2xl border border-gray-200 hover:bg-gray-50"
                                         onClick={() => setOpen(false)}
                                     >
-                                        My Workspaces
+                                        Dashboard
                                     </Link>
                                     <Button variant="outline" className="w-full rounded-2xl h-12 text-base" onClick={handleLogout}>
                                         <LogOut className="w-4 h-4 mr-2" />

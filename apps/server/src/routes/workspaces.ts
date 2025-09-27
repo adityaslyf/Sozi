@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { WorkspaceService } from "../services/workspaceService.js";
 import { JWTService } from "../services/jwtService.js";
+import { FileService } from "../services/fileService.js";
+import { NotesService } from "../services/notesService.js";
+import { SummaryDbService } from "../services/summaryDbService.js";
+import { MCQDbService } from "../services/mcqDbService.js";
 
 const router = Router();
 
@@ -245,3 +249,90 @@ router.delete("/:id", authenticateUser, async (req: any, res) => {
 });
 
 export default router;
+
+/**
+ * GET /workspaces/:id/analytics - Get aggregated analytics for a workspace
+ */
+router.get("/:id/analytics", authenticateUser, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify workspace ownership
+    const workspace = await WorkspaceService.getWorkspaceById(id, userId);
+    if (!workspace) {
+      return res.status(404).json({
+        success: false,
+        message: "Workspace not found",
+      });
+    }
+
+    // Parallel fetches
+    const [
+      filesCountPromise,
+      summariesPromise,
+      notesPromise,
+      mcqSessionsPromise,
+    ] = [
+      FileService.getWorkspaceFileCount(id),
+      SummaryDbService.getWorkspaceSummaries(id),
+      NotesService.getNotesByWorkspace(id, userId),
+      MCQDbService.getMCQSessionsByWorkspaceId(id, userId),
+    ];
+
+    const [filesCount, summaries, notes, mcqSessions] = await Promise.all([
+      filesCountPromise,
+      summariesPromise,
+      notesPromise,
+      mcqSessionsPromise,
+    ]);
+
+    // MCQ stats derived from attempts across sessions
+    const attemptsArrays = await Promise.all(
+      mcqSessions.map((s) => MCQDbService.getAttemptsBySessionId(s.id, userId))
+    );
+    const allAttempts = attemptsArrays.flat();
+
+    const totalExercises = mcqSessions.reduce(
+      (sum, s) => sum + (s.totalQuestions || 0),
+      0
+    );
+
+    const totalAttempts = allAttempts.length;
+    const averagePercentage = totalAttempts
+      ? Math.round(
+          (allAttempts.reduce((sum, a) => sum + (a.percentage || 0), 0) /
+            totalAttempts) * 100
+        ) / 100
+      : 0;
+    const bestPercentage = totalAttempts
+      ? Math.max(...allAttempts.map((a) => a.percentage || 0))
+      : 0;
+
+    res.json({
+      success: true,
+      analytics: {
+        files: filesCount,
+        summaries: summaries.length,
+        notes: notes.length,
+        mcqSessions: mcqSessions.length,
+        exercises: totalExercises,
+        score: {
+          averagePercentage,
+          bestPercentage,
+          attempts: totalAttempts,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get workspace analytics error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch analytics",
+      error:
+        process.env.NODE_ENV === "development"
+          ? (error as Error).message
+          : "Internal server error",
+    });
+  }
+});

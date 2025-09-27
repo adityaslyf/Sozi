@@ -134,3 +134,47 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Corporate dashboard theme (beige surfaces, dark sidebar) */
+.corp-theme {
+  --corp-bg: #ebe6de; /* page background */
+  --corp-card: #f6f2ea; /* card background */
+  --corp-card-2: #eee8de; /* alt card */
+  --corp-stroke: rgba(0, 0, 0, 0.08);
+  --corp-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --corp-sidebar: #121212; /* left rail */
+  --corp-sidebar-2: #181818;
+  --corp-text: #101010;
+  --corp-muted: #6b6b6b;
+  --corp-accent: #e7d7a6; /* warm sand */
+  --corp-green: #2fbf71; /* progress */
+}
+
+.corp-surface {
+  background: var(--corp-card);
+  border: 1px solid var(--corp-stroke);
+  border-radius: 24px;
+  box-shadow: var(--corp-shadow);
+}
+
+.corp-surface-soft {
+  background: linear-gradient(180deg, var(--corp-card) 0%, var(--corp-card-2) 100%);
+  border: 1px solid var(--corp-stroke);
+  border-radius: 24px;
+  box-shadow: var(--corp-shadow);
+}
+
+.corp-pill {
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid var(--corp-stroke);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+.corp-sidebar {
+  background: linear-gradient(180deg, var(--corp-sidebar) 0%, var(--corp-sidebar-2) 100%);
+  color: #f3f3f3;
+}
+
+.corp-shadow-sm { box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.corp-shadow-lg { box-shadow: 0 20px 60px rgba(0,0,0,.12); }

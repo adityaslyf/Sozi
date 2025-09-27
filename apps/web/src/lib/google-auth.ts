@@ -39,6 +39,22 @@ interface CredentialResponse {
 import AUTH_CONFIG from '@/config/auth';
 import { toast } from 'sonner';
 
+// Types for backend auth exchange
+interface AuthTokens { accessToken: string; refreshToken: string }
+export interface AuthUser {
+  id: string;
+  name?: string;
+  email?: string;
+  picture?: string;
+  given_name?: string;
+  family_name?: string;
+}
+interface BackendAuthResponse {
+  tokens?: AuthTokens;
+  user?: AuthUser;
+  name?: string;
+}
+
 // Google Client ID from configuration
 const GOOGLE_CLIENT_ID = AUTH_CONFIG.GOOGLE_CLIENT_ID;
 
@@ -104,7 +120,7 @@ export class GoogleAuth {
     }
   }
 
-  private async sendTokenToBackend(token: string, userInfo: any): Promise<void> {
+  private async sendTokenToBackend(token: string, userInfo: Record<string, unknown> | AuthUser): Promise<void> {
     try {
       // Sending authentication to backend
       
@@ -135,7 +151,7 @@ export class GoogleAuth {
     }
   }
 
-  private handleSuccessfulLogin(data: any): void {
+  private handleSuccessfulLogin(data: BackendAuthResponse): void {
     // Store user session data
     
     // Store JWT tokens securely
@@ -162,9 +178,9 @@ export class GoogleAuth {
     // Show success toast and redirect
     toast.success(`Welcome ${userName}! Redirecting to your workspaces...`);
     
-    // Redirect to workspaces page after successful login
+    // Redirect to dashboard after successful login
     setTimeout(() => {
-      window.location.href = '/workspaces';
+      window.location.href = '/dashboard';
     }, 1500);
   }
 
@@ -231,7 +247,6 @@ export class GoogleAuth {
     // Proceed with demo login automatically
     this.handleSuccessfulLogin({
       user: demoUser,
-      userInfo: demoUser,
       name: demoUser.name,
     });
   }
@@ -259,10 +274,10 @@ export class GoogleAuth {
   /**
    * Get current user from localStorage
    */
-  public getCurrentUser(): any | null {
+  public getCurrentUser(): AuthUser | null {
     try {
       const userStr = localStorage.getItem('user');
-      return userStr ? JSON.parse(userStr) : null;
+      return userStr ? (JSON.parse(userStr) as AuthUser) : null;
     } catch (error) {
       console.error('Error getting current user:', error);
       return null;
