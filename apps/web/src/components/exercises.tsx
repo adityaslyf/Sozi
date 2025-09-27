@@ -1,13 +1,17 @@
 import React from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Brain, Users, Zap, MessageSquare, GraduationCap, ArrowRight, Sparkles, List } from 'lucide-react';
+import { Brain, Users, Zap, MessageSquare, GraduationCap, ArrowRight, Sparkles, List, MessageCircle } from 'lucide-react';
+import { ChatInterface } from './chat-interface';
 
 interface ExercisesProps {
+  workspaceId: string;
+  fileId?: string;
+  fileName?: string;
   onStartMCQ: () => void;
 }
 
-export function Exercises({ onStartMCQ }: ExercisesProps) {
+export function Exercises({ workspaceId, fileId, fileName, onStartMCQ }: ExercisesProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -130,28 +134,45 @@ export function Exercises({ onStartMCQ }: ExercisesProps) {
           </CardContent>
         </Card>
 
-        {/* AI Study Assistant */}
-        <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-indigo-200">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                <Sparkles className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">AI Study Assistant</h3>
-                <p className="text-sm text-gray-600 mb-4">Get personalized study recommendations</p>
-              </div>
-              <Button 
-                className="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-0"
-                variant="outline"
-              >
-                START SESSION
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {/* AI Study Assistant */}
+              <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-indigo-200">
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                      <Sparkles className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">AI Study Assistant</h3>
+                      <p className="text-sm text-gray-600 mb-4">Get personalized study recommendations</p>
+                    </div>
+                    <Button 
+                      className="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-0"
+                      variant="outline"
+                    >
+                      START SESSION
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+      {/* AI Chat Assistant */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+            AI Study Chat
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChatInterface 
+            workspaceId={workspaceId}
+            fileId={fileId}
+            fileName={fileName}
+          />
+        </CardContent>
+      </Card>
 
       {/* Activity Section */}
       <Card className="mt-8">

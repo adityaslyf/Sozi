@@ -632,7 +632,12 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
         )}
 
         {activeTab === 'exercises' && (
-          <Exercises onStartMCQ={() => setShowMCQModal(true)} />
+          <Exercises 
+            workspaceId={workspaceId}
+            fileId={fileId}
+            fileName={fileName}
+            onStartMCQ={() => setShowMCQModal(true)} 
+          />
         )}
       </div>
 

@@ -6,9 +6,11 @@ import workspaceRoutes from "./routes/workspaces.js";
 import fileRoutes from "./routes/files.js";
 import summaryRoutes from "./routes/summaries.js";
 import mcqRoutes from "./routes/mcq.js";
+import chatRoutes from "./routes/chat.js";
 import { DocumentService } from "./services/documentService.js";
 import { SummaryService } from "./services/summaryService.js";
 import { MCQService } from "./services/mcqService.js";
+import { ChatService } from "./services/chatService.js";
 
 const app = express();
 
@@ -46,6 +48,9 @@ app.use("/workspaces", summaryRoutes);
 // MCQ routes (nested under workspaces)
 app.use("/workspaces", mcqRoutes);
 
+// Chat routes (nested under workspaces)
+app.use("/workspaces", chatRoutes);
+
 const port = process.env.PORT || 3000;
 
 // Initialize services
@@ -59,6 +64,9 @@ async function initializeServer() {
 		
 		await MCQService.initialize();
 		console.log("✅ MCQService initialized successfully");
+		
+		await ChatService.initialize();
+		console.log("✅ ChatService initialized successfully");
 	} catch (error) {
 		console.error("❌ Failed to initialize services:", error);
 		console.log("⚠️ Server will continue but some features may be disabled");
@@ -73,6 +81,7 @@ app.listen(port, async () => {
 	console.log(`📄 File upload endpoint: http://localhost:${port}/workspaces/:id/files`);
 	console.log(`📝 Summary endpoint: http://localhost:${port}/workspaces/:id/files/:fileId/summary`);
 	console.log(`🧠 MCQ endpoint: http://localhost:${port}/workspaces/:id/files/:fileId/mcq/generate`);
+	console.log(`💬 Chat endpoint: http://localhost:${port}/workspaces/:id/chat`);
 	
 	// Initialize document service
 	await initializeServer();
