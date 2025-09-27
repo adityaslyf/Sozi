@@ -37,6 +37,7 @@ interface CredentialResponse {
 }
 
 import AUTH_CONFIG from '@/config/auth';
+import { toast } from 'sonner';
 
 // Google Client ID from configuration
 const GOOGLE_CLIENT_ID = AUTH_CONFIG.GOOGLE_CLIENT_ID;
@@ -126,11 +127,11 @@ export class GoogleAuth {
         this.handleSuccessfulLogin(data);
       } else {
         console.error('❌ Backend authentication failed:', data);
-        alert(`Authentication failed: ${data.message || 'Unknown error'}`);
+        toast.error(`Authentication failed: ${data.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('❌ Network error during authentication:', error);
-      alert('Network error during authentication. Please check if the backend server is running.');
+      toast.error('Network error during authentication. Please check if the backend server is running.');
     }
   }
 
@@ -157,10 +158,14 @@ export class GoogleAuth {
     // Show success message
     const userName = data.user?.name || data.name || 'User';
     console.log(`🎉 Welcome ${userName}! Login successful.`);
-    alert(`Welcome ${userName}! You have been successfully logged in.`);
     
-    // Optional: Redirect to dashboard or reload page
-    // window.location.href = '/dashboard';
+    // Show success toast and redirect
+    toast.success(`Welcome ${userName}! Redirecting to your workspaces...`);
+    
+    // Redirect to workspaces page after successful login
+    setTimeout(() => {
+      window.location.href = '/workspaces';
+    }, 1500);
   }
 
   public async signIn(): Promise<void> {
@@ -170,7 +175,7 @@ export class GoogleAuth {
     
     if (GOOGLE_CLIENT_ID === 'demo-client-id.googleusercontent.com' || !GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('demo')) {
       console.log('Using demo login because no real Google Client ID is configured');
-      alert('Demo Mode: To use real Google login, please:\n\n1. Get Google OAuth Client ID from Google Cloud Console\n2. Add to your .env file in apps/web/:\n   VITE_GOOGLE_CLIENT_ID=your-real-client-id\n3. Add http://localhost:3001 as authorized origin\n4. Restart dev server\n\nFor now, using demo login...');
+      toast.info('Demo Mode: Using simulated login. Configure VITE_GOOGLE_CLIENT_ID for real Google OAuth.');
       this.handleDemoLogin();
       return;
     }
@@ -199,18 +204,16 @@ export class GoogleAuth {
   private handleGoogleError(errorMessage: string): void {
     console.error('Google OAuth Error:', errorMessage);
     
-    const useDemo = confirm(
-      `Google OAuth Error: ${errorMessage}\n\n` +
-      'This might be due to:\n' +
-      '• Configuration still propagating (wait 10-15 minutes)\n' +
-      '• Incorrect authorized origins in Google Cloud Console\n' +
-      '• Network/firewall issues\n\n' +
-      'Would you like to use demo login instead for now?'
-    );
+    toast.error(`Google OAuth Error: ${errorMessage}`, {
+      description: 'This might be due to configuration issues or network problems. Check console for details.',
+      duration: 5000,
+    });
     
-    if (useDemo) {
+    // Automatically fall back to demo login after showing error
+    setTimeout(() => {
+      toast.info('Falling back to demo login...');
       this.handleDemoLogin();
-    }
+    }, 2000);
   }
 
   private handleDemoLogin(): void {
@@ -226,16 +229,16 @@ export class GoogleAuth {
 
     console.log('Demo login successful:', demoUser);
     
-    // Show demo login popup
-    const confirmed = confirm(`Demo Login:\n\nName: ${demoUser.name}\nEmail: ${demoUser.email}\n\nClick OK to proceed with demo login.`);
+    toast.success(`Demo Login: ${demoUser.name}`, {
+      description: 'Using simulated authentication for demonstration purposes.',
+    });
     
-    if (confirmed) {
-      this.handleSuccessfulLogin({
-        user: demoUser,
-        userInfo: demoUser,
-        name: demoUser.name,
-      });
-    }
+    // Proceed with demo login automatically
+    this.handleSuccessfulLogin({
+      user: demoUser,
+      userInfo: demoUser,
+      name: demoUser.name,
+    });
   }
 
   public async signInWithPopup(): Promise<void> {

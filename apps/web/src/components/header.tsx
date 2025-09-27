@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Chrome, LogOut, User } from "lucide-react";
 import { googleAuth } from "@/lib/google-auth";
+import { toast } from "sonner";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function Header() {
             await googleAuth.signInWithPopup();
         } catch (error) {
             console.error("Google auth failed:", error);
-            alert("Google authentication failed. Please try again.");
+            toast.error("Google authentication failed. Please try again.");
         }
     };
 
@@ -78,6 +79,9 @@ export default function Header() {
                     <div className="hidden md:flex items-center gap-3">
                         {isLoggedIn ? (
                             <>
+                                <Link to="/workspaces" className="text-sm hover:opacity-70">
+                                    My Workspaces
+                                </Link>
                                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
                                     <User className="w-4 h-4" />
                                     <span className="text-sm font-medium">{user?.name || 'User'}</span>
@@ -135,6 +139,13 @@ export default function Header() {
                                             <p className="text-sm text-gray-600">{user?.email}</p>
                                         </div>
                                     </div>
+                                    <Link 
+                                        to="/workspaces" 
+                                        className="block w-full p-3 text-center rounded-2xl border border-gray-200 hover:bg-gray-50"
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        My Workspaces
+                                    </Link>
                                     <Button variant="outline" className="w-full rounded-2xl h-12 text-base" onClick={handleLogout}>
                                         <LogOut className="w-4 h-4 mr-2" />
                                         Sign Out
