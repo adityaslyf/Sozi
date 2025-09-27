@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import WorkspaceManager from "@/components/workspace-manager";
 
 export const Route = createFileRoute("/workspaces")({
@@ -6,9 +6,10 @@ export const Route = createFileRoute("/workspaces")({
 });
 
 function WorkspacesComponent() {
+	// Always render the Outlet - TanStack Router will handle the routing
 	return (
 		<main className="min-h-screen bg-white">
-			<WorkspaceManager />
+			<Outlet />
 		</main>
 	);
 }

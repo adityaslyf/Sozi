@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Folder, Trash2, Edit, Calendar } from "lucide-react";
+import { Plus, Folder, Trash2, Edit, Calendar, ExternalLink } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { googleAuth } from "@/lib/google-auth";
 import AUTH_CONFIG from "@/config/auth";
 import { toast } from "sonner";
@@ -27,8 +28,8 @@ export default function WorkspaceManager() {
 	});
 
 	// Check if user is logged in
-	const user = googleAuth.getCurrentUser();
 	const isLoggedIn = googleAuth.isLoggedIn();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (isLoggedIn) {
@@ -339,6 +340,20 @@ export default function WorkspaceManager() {
 								</div>
 
 								<div className="flex gap-2">
+									<Button 
+										size="sm"
+										onClick={() => {
+											console.log('Navigating to workspace:', workspace.id);
+											navigate({ 
+												to: '/workspaces/$workspaceId', 
+												params: { workspaceId: workspace.id } 
+											});
+										}}
+										className="flex items-center gap-1"
+									>
+										<ExternalLink className="w-3 h-3" />
+										Open
+									</Button>
 									<Button
 										variant="outline"
 										size="sm"
