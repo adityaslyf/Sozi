@@ -8,7 +8,7 @@ export const AUTH_CONFIG = {
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
   
   // OAuth endpoints
-  GOOGLE_AUTH_ENDPOINT: '/api/auth/google',
+  GOOGLE_AUTH_ENDPOINT: '/auth/google',
 } as const;
 
 export default AUTH_CONFIG;

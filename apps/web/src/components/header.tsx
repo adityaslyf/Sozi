@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Chrome } from "lucide-react";
+import { Menu, X, Chrome, LogOut, User } from "lucide-react";
 import { googleAuth } from "@/lib/google-auth";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
+    const [user, setUser] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     const links = [
         { to: "#benefits", label: "Benefits" },
         { to: "#specs", label: "Specifications" },
@@ -16,6 +19,31 @@ export default function Header() {
     useEffect(() => {
         // Initialize Google Auth when component mounts
         googleAuth.initialize().catch(console.error);
+        
+        // Check initial login status
+        const currentUser = googleAuth.getCurrentUser();
+        const loggedIn = googleAuth.isLoggedIn();
+        setUser(currentUser);
+        setIsLoggedIn(loggedIn);
+
+        // Listen for login/logout events
+        const handleLogin = (event: CustomEvent) => {
+            setUser(event.detail.user || event.detail);
+            setIsLoggedIn(true);
+        };
+
+        const handleLogout = () => {
+            setUser(null);
+            setIsLoggedIn(false);
+        };
+
+        window.addEventListener('userLoggedIn', handleLogin as EventListener);
+        window.addEventListener('userSignedOut', handleLogout as EventListener);
+
+        return () => {
+            window.removeEventListener('userLoggedIn', handleLogin as EventListener);
+            window.removeEventListener('userSignedOut', handleLogout as EventListener);
+        };
     }, []);
 
 
@@ -27,6 +55,10 @@ export default function Header() {
             console.error("Google auth failed:", error);
             alert("Google authentication failed. Please try again.");
         }
+    };
+
+    const handleLogout = () => {
+        googleAuth.signOut();
     };
 
     return (
@@ -44,10 +76,23 @@ export default function Header() {
                     </nav>
 
                     <div className="hidden md:flex items-center gap-3">
-                        <Button className="rounded-full px-5 bg-primary hover:bg-primary/90 text-white" size="lg" onClick={handleGoogleAuth}>
-                            <Chrome className="w-4 h-4 mr-2" />
-                            Sign in with Google
-                        </Button>
+                        {isLoggedIn ? (
+                            <>
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
+                                    <User className="w-4 h-4" />
+                                    <span className="text-sm font-medium">{user?.name || 'User'}</span>
+                                </div>
+                                <Button variant="outline" className="rounded-full px-4" onClick={handleLogout}>
+                                    <LogOut className="w-4 h-4 mr-2" />
+                                    Sign Out
+                                </Button>
+                            </>
+                        ) : (
+                            <Button className="rounded-full px-5 bg-primary hover:bg-primary/90 text-white" size="lg" onClick={handleGoogleAuth}>
+                                <Chrome className="w-4 h-4 mr-2" />
+                                Sign in with Google
+                            </Button>
+                        )}
                     </div>
 
                     <button
@@ -81,10 +126,26 @@ export default function Header() {
                             ))}
                         </div>
                         <div className="mt-6 space-y-3">
-                            <Button className="w-full rounded-2xl h-12 text-base bg-primary hover:bg-primary/90 text-white" onClick={handleGoogleAuth}>
-                                <Chrome className="w-4 h-4 mr-2" />
-                                Sign in with Google
-                            </Button>
+                            {isLoggedIn ? (
+                                <>
+                                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-100">
+                                        <User className="w-5 h-5" />
+                                        <div>
+                                            <p className="font-medium">{user?.name || 'User'}</p>
+                                            <p className="text-sm text-gray-600">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                    <Button variant="outline" className="w-full rounded-2xl h-12 text-base" onClick={handleLogout}>
+                                        <LogOut className="w-4 h-4 mr-2" />
+                                        Sign Out
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button className="w-full rounded-2xl h-12 text-base bg-primary hover:bg-primary/90 text-white" onClick={handleGoogleAuth}>
+                                    <Chrome className="w-4 h-4 mr-2" />
+                                    Sign in with Google
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>

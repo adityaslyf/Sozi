@@ -105,51 +105,62 @@ export class GoogleAuth {
 
   private async sendTokenToBackend(token: string, userInfo: any): Promise<void> {
     try {
+      console.log('🔄 Sending authentication to backend...');
+      
       const response = await fetch(AUTH_CONFIG.API_BASE_URL + AUTH_CONFIG.GOOGLE_AUTH_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           token,
           userInfo,
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Authentication successful:', data);
-        // Handle successful login (e.g., redirect, update UI state)
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log('✅ Authentication successful:', data);
         this.handleSuccessfulLogin(data);
       } else {
-        console.error('Authentication failed:', await response.text());
-        // For demo, still show success
-        this.handleSuccessfulLogin({
-          user: userInfo,
-          userInfo: userInfo,
-          name: userInfo.name,
-        });
+        console.error('❌ Backend authentication failed:', data);
+        alert(`Authentication failed: ${data.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Network error during authentication:', error);
-      // For demo, still show success
-      this.handleSuccessfulLogin({
-        user: userInfo,
-        userInfo: userInfo,
-        name: userInfo.name,
-      });
+      console.error('❌ Network error during authentication:', error);
+      alert('Network error during authentication. Please check if the backend server is running.');
     }
   }
 
   private handleSuccessfulLogin(data: any): void {
-    // Store user info or token
-    localStorage.setItem('user', JSON.stringify(data));
+    console.log('💾 Storing user session data...');
     
-    // You could dispatch events, update global state, or redirect
+    // Store JWT tokens securely
+    if (data.tokens) {
+      localStorage.setItem('accessToken', data.tokens.accessToken);
+      localStorage.setItem('refreshToken', data.tokens.refreshToken);
+    }
+    
+    // Store user profile data
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
+    
+    // Store full session data for backward compatibility
+    localStorage.setItem('userSession', JSON.stringify(data));
+    
+    // Dispatch custom event for other components to listen to
     window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: data }));
     
     // Show success message
-    alert(`Welcome ${data.name || data.userInfo?.name || 'User'}! Login successful.`);
+    const userName = data.user?.name || data.name || 'User';
+    console.log(`🎉 Welcome ${userName}! Login successful.`);
+    alert(`Welcome ${userName}! You have been successfully logged in.`);
+    
+    // Optional: Redirect to dashboard or reload page
+    // window.location.href = '/dashboard';
   }
 
   public async signIn(): Promise<void> {
@@ -244,6 +255,95 @@ export class GoogleAuth {
         logo_alignment: 'left',
         width: '300px',
       });
+    }
+  }
+
+  /**
+   * Get current user from localStorage
+   */
+  public getCurrentUser(): any | null {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get access token from localStorage
+   */
+  public getAccessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
+  /**
+   * Check if user is logged in
+   */
+  public isLoggedIn(): boolean {
+    return !!this.getAccessToken() && !!this.getCurrentUser();
+  }
+
+  /**
+   * Sign out user
+   */
+  public signOut(): void {
+    console.log('🔓 Signing out user...');
+    
+    // Clear all stored data
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userSession');
+    
+    // Dispatch sign out event
+    window.dispatchEvent(new CustomEvent('userSignedOut'));
+    
+    console.log('✅ User signed out successfully');
+    
+    // Optional: Reload page or redirect
+    // window.location.reload();
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  public async refreshToken(): Promise<boolean> {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken) {
+        console.error('No refresh token available');
+        return false;
+      }
+
+      const response = await fetch(AUTH_CONFIG.API_BASE_URL + '/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update tokens
+        localStorage.setItem('accessToken', data.tokens.accessToken);
+        localStorage.setItem('refreshToken', data.tokens.refreshToken);
+        console.log('✅ Token refreshed successfully');
+        return true;
+      } else {
+        console.error('❌ Token refresh failed:', data);
+        this.signOut(); // Sign out if refresh fails
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing token:', error);
+      this.signOut(); // Sign out on error
+      return false;
     }
   }
 }
