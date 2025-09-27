@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { summaries } from "../db/schema/summaries.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 export class SummaryDbService {
 	/**
@@ -13,7 +13,12 @@ export class SummaryDbService {
 		keyTopics: string[];
 		structure: Array<{ heading: string; content: string }>;
 		type?: string;
+		title?: string;
 	}) {
+		// Get the next version number
+		const existingSummaries = await this.getAllSummariesByFileId(data.fileId, data.workspaceId);
+		const nextVersion = existingSummaries.length + 1;
+
 		const [summary] = await db.insert(summaries).values({
 			fileId: data.fileId,
 			workspaceId: data.workspaceId,
@@ -21,6 +26,8 @@ export class SummaryDbService {
 			keyTopics: data.keyTopics,
 			structure: data.structure,
 			type: data.type || "golden",
+			title: data.title || `Golden Summary v${nextVersion}`,
+			version: nextVersion,
 			status: "ready",
 		}).returning();
 
@@ -28,7 +35,7 @@ export class SummaryDbService {
 	}
 
 	/**
-	 * Get summary by file ID
+	 * Get latest summary by file ID
 	 */
 	static async getSummaryByFileId(fileId: string, workspaceId: string) {
 		const [summary] = await db
@@ -36,6 +43,37 @@ export class SummaryDbService {
 			.from(summaries)
 			.where(and(
 				eq(summaries.fileId, fileId),
+				eq(summaries.workspaceId, workspaceId)
+			))
+			.orderBy(desc(summaries.version))
+			.limit(1);
+
+		return summary || null;
+	}
+
+	/**
+	 * Get all summaries for a file
+	 */
+	static async getAllSummariesByFileId(fileId: string, workspaceId: string) {
+		return await db
+			.select()
+			.from(summaries)
+			.where(and(
+				eq(summaries.fileId, fileId),
+				eq(summaries.workspaceId, workspaceId)
+			))
+			.orderBy(desc(summaries.version));
+	}
+
+	/**
+	 * Get summary by ID
+	 */
+	static async getSummaryById(summaryId: string, workspaceId: string) {
+		const [summary] = await db
+			.select()
+			.from(summaries)
+			.where(and(
+				eq(summaries.id, summaryId),
 				eq(summaries.workspaceId, workspaceId)
 			))
 			.limit(1);
@@ -90,6 +128,7 @@ export class SummaryDbService {
 			.delete(summaries)
 			.where(eq(summaries.fileId, fileId));
 	}
+
 
 	/**
 	 * Check if summary exists for file

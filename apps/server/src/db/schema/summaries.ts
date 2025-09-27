@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, jsonb, timestamp, varchar, integer } from "drizzle-orm/pg-core";
 import { files } from "./files";
 import { workspaces } from "./workspaces";
 
@@ -15,6 +15,8 @@ export const summaries = pgTable("summaries", {
 	// Metadata
 	type: varchar("type", { length: 50 }).default("golden"), // "golden", "quick", "auto"
 	status: varchar("status", { length: 20 }).default("ready"), // "generating", "ready", "error"
+	version: integer("version").default(1).notNull(), // Version number for multiple summaries
+	title: varchar("title", { length: 255 }).default("Golden Summary"), // User-defined title
 	
 	// Timestamps
 	createdAt: timestamp("created_at").defaultNow().notNull(),
