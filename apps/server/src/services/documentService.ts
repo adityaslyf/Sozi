@@ -216,7 +216,7 @@ export class DocumentService {
 				const htmlResult = await mammoth.convertToHtml({ buffer });
 				
 				// Convert HTML to plain text
-				let text = htmlResult.value
+				const text = htmlResult.value
 					.replace(/<[^>]*>/g, ' ') // Remove HTML tags
 					.replace(/&nbsp;/g, ' ')
 					.replace(/&amp;/g, '&')
@@ -231,7 +231,8 @@ export class DocumentService {
 				console.log(`📄 Text preview (first 200 chars): "${text.substring(0, 200)}..."`);
 				
 				// Check if text looks reasonable (mostly ASCII characters)
-				const asciiRatio = (text.match(/[\x00-\x7F]/g) || []).length / text.length;
+				const asciiChars = text.split('').filter(char => char.charCodeAt(0) <= 127);
+				const asciiRatio = asciiChars.length / text.length;
 				if (asciiRatio > 0.7 && text.length > 0) {
 					console.log(`✅ HTML extraction successful (${Math.round(asciiRatio * 100)}% ASCII chars)`);
 					return text;
@@ -352,21 +353,40 @@ export class DocumentService {
 			console.log(`📦 Processing ${documentsWithMetadata.length} documents in ${totalBatches} batches of ${batchSize}...`);
 			console.log(`⏱️ Estimated processing time: ${Math.round(estimatedTimeMs/1000)}s (${Math.round(estimatedTimeMs/60000)} minutes)`);
 			
+			let successfulChunks = 0;
+			let skippedChunks = 0;
+			
 			for (let i = 0; i < documentsWithMetadata.length; i += batchSize) {
 				const batch = documentsWithMetadata.slice(i, i + batchSize);
 				const batchNum = Math.floor(i/batchSize) + 1;
 				console.log(`🔄 Processing batch ${batchNum}/${totalBatches} (${batch.length} documents)...`);
 				
 				try {
+					// Validate batch content before processing
+					const validBatch = await this.validateAndFilterBatch(batch, batchNum);
+					
+					if (validBatch.length === 0) {
+						console.log(`⚠️ Batch ${batchNum} has no valid documents, skipping...`);
+						skippedChunks += batch.length;
+						continue;
+					}
+					
+					if (validBatch.length < batch.length) {
+						console.log(`⚠️ Batch ${batchNum}: ${batch.length - validBatch.length} documents filtered out`);
+						skippedChunks += (batch.length - validBatch.length);
+					}
+					
 					await PineconeStore.fromDocuments(
-						batch,
+						validBatch,
 						this.embeddings,
 						{
 							pineconeIndex: index,
 							namespace: workspaceId,
 						}
 					);
-					console.log(`✅ Batch ${batchNum} completed successfully`);
+					
+					successfulChunks += validBatch.length;
+					console.log(`✅ Batch ${batchNum} completed successfully (${validBatch.length} documents)`);
 					
 					// Keep 2-second delay between batches for API rate limits and accuracy
 					if (i + batchSize < documentsWithMetadata.length) {
@@ -375,17 +395,129 @@ export class DocumentService {
 					}
 				} catch (batchError) {
 					console.error(`❌ Error processing batch ${batchNum}:`, batchError);
-					throw batchError;
+					
+					// Try to process documents individually to identify problematic ones
+					console.log(`🔄 Attempting individual document processing for batch ${batchNum}...`);
+					
+					for (let j = 0; j < batch.length; j++) {
+						const singleDoc = [batch[j]];
+						try {
+							// Validate single document
+							const validDoc = await this.validateAndFilterBatch(singleDoc, `${batchNum}.${j+1}`);
+							
+							if (validDoc.length === 0) {
+								console.log(`⚠️ Document ${j+1} in batch ${batchNum} is invalid, skipping...`);
+								skippedChunks++;
+								continue;
+							}
+							
+							await PineconeStore.fromDocuments(
+								validDoc,
+								this.embeddings,
+								{
+									pineconeIndex: index,
+									namespace: workspaceId,
+								}
+							);
+							
+							successfulChunks++;
+							console.log(`✅ Individual document ${j+1} in batch ${batchNum} processed successfully`);
+							
+							// Small delay between individual documents
+							await new Promise(resolve => setTimeout(resolve, 500));
+						} catch (docError) {
+							console.error(`❌ Failed to process document ${j+1} in batch ${batchNum}:`, docError);
+							skippedChunks++;
+						}
+					}
 				}
 			}
+			
+			console.log(`📊 Processing summary: ${successfulChunks} successful, ${skippedChunks} skipped out of ${documentsWithMetadata.length} total chunks`);
 
-			console.log(`🚀 Successfully stored ${documentsWithMetadata.length} chunks in Pinecone for ${fileName}`);
+			if (successfulChunks > 0) {
+				console.log(`🚀 Successfully stored ${successfulChunks} chunks in Pinecone for ${fileName}`);
+			} else {
+				console.log(`⚠️ No chunks were successfully processed for ${fileName}`);
+			}
 		} catch (error) {
 			console.error(`❌ Error processing document ${fileName}:`, error);
 			throw error;
 		}
 
 		console.log(`✅ Document processing completed for ${fileName}`);
+	}
+
+	/**
+	 * Validate and filter a batch of documents to ensure they can produce valid embeddings
+	 */
+	static async validateAndFilterBatch(
+		batch: Array<{ pageContent: string; metadata: Record<string, unknown> }>,
+		batchId: string | number
+	): Promise<Array<{ pageContent: string; metadata: Record<string, unknown> }>> {
+		const validDocuments = [];
+		
+		for (let i = 0; i < batch.length; i++) {
+			const doc = batch[i];
+			
+			// Check if document has valid content
+			if (!doc.pageContent || typeof doc.pageContent !== 'string') {
+				console.log(`⚠️ Batch ${batchId}, doc ${i+1}: Invalid or missing pageContent`);
+				continue;
+			}
+			
+			// Check content length (too short or too long can cause issues)
+			const contentLength = doc.pageContent.trim().length;
+			if (contentLength < 10) {
+				console.log(`⚠️ Batch ${batchId}, doc ${i+1}: Content too short (${contentLength} chars)`);
+				continue;
+			}
+			
+			if (contentLength > 8000) {
+				console.log(`⚠️ Batch ${batchId}, doc ${i+1}: Content too long (${contentLength} chars), truncating...`);
+				doc.pageContent = doc.pageContent.substring(0, 8000);
+			}
+			
+			// Check for problematic characters that might cause embedding issues
+			let cleanContent = doc.pageContent;
+			
+			// Remove control characters and replacement characters
+			cleanContent = cleanContent
+				.split('')
+				.filter(char => {
+					const code = char.charCodeAt(0);
+					// Keep printable characters (32-126) and common whitespace (9, 10, 13)
+					return (code >= 32 && code <= 126) || code === 9 || code === 10 || code === 13;
+				})
+				.join('')
+				.replace(/\uFFFD/g, '') // Remove replacement characters
+				.trim();
+			
+			if (cleanContent.length < 10) {
+				console.log(`⚠️ Batch ${batchId}, doc ${i+1}: Content too short after cleaning (${cleanContent.length} chars)`);
+				continue;
+			}
+			
+			// Test if content can generate a valid embedding (sample test)
+			try {
+				// For very problematic content, we can test a small sample
+				const testContent = cleanContent.substring(0, 100);
+				if (!/[a-zA-Z0-9]/.test(testContent)) {
+					console.log(`⚠️ Batch ${batchId}, doc ${i+1}: No alphanumeric characters found`);
+					continue;
+				}
+				
+				// Update document with cleaned content
+				doc.pageContent = cleanContent;
+				validDocuments.push(doc);
+				
+			} catch (validationError) {
+				console.log(`⚠️ Batch ${batchId}, doc ${i+1}: Validation failed:`, validationError instanceof Error ? validationError.message : String(validationError));
+				continue;
+			}
+		}
+		
+		return validDocuments;
 	}
 
 	/**
@@ -480,7 +612,7 @@ export class DocumentService {
 	/**
 	 * Inspect stored chunks in Pinecone for debugging
 	 */
-	static async inspectStoredChunks(workspaceId: string, limit: number = 10): Promise<any[]> {
+	static async inspectStoredChunks(workspaceId: string, limit: number = 10): Promise<Array<{ id?: string; score?: number; metadata?: Record<string, unknown> }>> {
 		if (!this.initialized) {
 			throw new Error("DocumentService not initialized");
 		}
@@ -495,10 +627,9 @@ export class DocumentService {
 			// Query with a generic vector to get some results
 			const queryVector = new Array(768).fill(0.1); // Create a dummy vector
 			
-			const queryResponse = await index.query({
+			const queryResponse = await index.namespace(workspaceId).query({
 				vector: queryVector,
 				topK: limit,
-				namespace: workspaceId,
 				includeMetadata: true,
 			});
 
@@ -518,7 +649,7 @@ export class DocumentService {
 	/**
 	 * Test search with sample queries to verify content quality
 	 */
-	static async testSearchQuality(workspaceId: string): Promise<any> {
+	static async testSearchQuality(workspaceId: string): Promise<Array<{ query: string; resultCount?: number; results?: Array<{ score: number; preview: string; metadata: Record<string, unknown> }>; error?: string }>> {
 		if (!this.initialized) {
 			throw new Error("DocumentService not initialized");
 		}

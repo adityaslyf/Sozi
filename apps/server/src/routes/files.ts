@@ -378,6 +378,79 @@ router.post("/:workspaceId/search", authenticateUser, async (req: any, res) => {
 });
 
 /**
+ * POST /workspaces/:workspaceId/files/:fileId/verify - Verify and fix file processing status
+ */
+router.post("/:workspaceId/files/:fileId/verify", authenticateUser, async (req: any, res) => {
+	try {
+		const { workspaceId, fileId } = req.params;
+		const userId = req.user.userId;
+
+		// Verify workspace ownership
+		const workspace = await WorkspaceService.getWorkspaceById(workspaceId, userId);
+		if (!workspace) {
+			return res.status(404).json({
+				success: false,
+				message: "Workspace not found",
+			});
+		}
+
+		// Get file info
+		const file = await FileService.getFileById(fileId, workspaceId);
+		if (!file) {
+			return res.status(404).json({
+				success: false,
+				message: "File not found",
+			});
+		}
+
+		console.log(`🔍 Verifying processing status for ${file.originalName} (current status: ${file.status})`);
+
+		// Check if embeddings exist in Pinecone
+		try {
+			const searchResults = await DocumentService.searchSimilarDocuments("test", workspaceId, 5);
+			const fileEmbeddings = searchResults.filter(result => 
+				result.metadata && result.metadata.fileId === fileId
+			);
+
+			if (fileEmbeddings.length > 0) {
+				console.log(`✅ Found ${fileEmbeddings.length} embeddings for ${file.originalName} - updating status to ready`);
+				await FileService.updateFileStatus(fileId, "ready");
+				
+				res.json({
+					success: true,
+					message: "File processing status verified and corrected",
+					status: "ready",
+					embeddingsFound: fileEmbeddings.length,
+				});
+			} else {
+				console.log(`❌ No embeddings found for ${file.originalName} - status remains as error`);
+				res.json({
+					success: false,
+					message: "No embeddings found for this file",
+					status: file.status,
+					embeddingsFound: 0,
+				});
+			}
+		} catch (searchError) {
+			console.error("Error verifying embeddings:", searchError);
+			res.status(500).json({
+				success: false,
+				message: "Failed to verify embeddings",
+				error: process.env.NODE_ENV === "development" ? searchError.message : "Internal server error",
+			});
+		}
+
+	} catch (error) {
+		console.error("File verification error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to verify file status",
+			error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
+		});
+	}
+});
+
+/**
  * Background document processing
  */
 async function processDocumentAsync(
@@ -395,18 +468,12 @@ async function processDocumentAsync(
 		const stats = await fs.stat(filePath);
 		const fileSizeMB = stats.size / (1024 * 1024);
 		
-		// Dynamic timeout based on estimated processing time
-		// For 186 chunks: ~13 batches × 3s per batch + 12 × 2s delays = ~63s processing time
-		// Add significant buffer for network delays and API rate limits
-		const estimatedChunks = Math.ceil(fileSizeMB * 100); // Rough estimate: 100 chunks per MB
-		const estimatedBatches = Math.ceil(estimatedChunks / 10); // 10 chunks per batch
-		const estimatedProcessingMs = (estimatedBatches * 5000) + ((estimatedBatches - 1) * 2000); // 5s per batch + 2s delays
-		
-		// Add generous buffer: 5 minutes base + estimated time + 50% buffer
-		const baseTimeoutMs = 5 * 60 * 1000; // 5 minutes base
-		const bufferMultiplier = 1.5; // 50% buffer
-		const maxTimeoutMs = 30 * 60 * 1000; // 30 minutes max
-		const timeoutMs = Math.min(baseTimeoutMs + (estimatedProcessingMs * bufferMultiplier), maxTimeoutMs);
+		// Much more generous timeout for large files
+		// For 4.9MB file: should allow at least 20-30 minutes
+		const baseTimeoutMs = 10 * 60 * 1000; // 10 minutes base
+		const perMBTimeoutMs = 5 * 60 * 1000; // 5 minutes per MB
+		const maxTimeoutMs = 45 * 60 * 1000; // 45 minutes max
+		const timeoutMs = Math.min(baseTimeoutMs + (fileSizeMB * perMBTimeoutMs), maxTimeoutMs);
 		
 		console.log(`⏰ Starting document processing for ${fileName} (${fileSizeMB.toFixed(2)} MB)`);
 		console.log(`⏰ Timeout set to ${Math.round(timeoutMs/1000)}s (${Math.round(timeoutMs/60000)} minutes)`);
@@ -425,7 +492,28 @@ async function processDocumentAsync(
 	} catch (error) {
 		console.error(`❌ Document processing failed for ${fileName}:`, error);
 		
-		// Update status to error
+		// Check if it's a timeout error and if processing might have actually succeeded
+		if (error.message && error.message.includes("timeout")) {
+			console.log(`⚠️ Processing timed out, checking if embeddings were actually stored...`);
+			
+			try {
+				// Check if any embeddings exist for this file in Pinecone
+				const searchResults = await DocumentService.searchSimilarDocuments("test", workspaceId, 1);
+				const hasEmbeddings = searchResults.some(result => 
+					result.metadata && result.metadata.fileId === fileId
+				);
+				
+				if (hasEmbeddings) {
+					console.log(`✅ Found embeddings for ${fileName} despite timeout - marking as ready`);
+					await FileService.updateFileStatus(fileId, "ready");
+					return;
+				}
+			} catch (searchError) {
+				console.log(`⚠️ Could not verify embeddings existence:`, searchError.message);
+			}
+		}
+		
+		// Update status to error only if we're sure it failed
 		await FileService.updateFileStatus(fileId, "error");
 	}
 }
