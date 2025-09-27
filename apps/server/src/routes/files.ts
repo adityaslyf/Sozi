@@ -391,9 +391,25 @@ async function processDocumentAsync(
 		// Update status to processing
 		await FileService.updateFileStatus(fileId, "processing");
 
-		// Process document with Gemini embeddings (with timeout)
-		const timeoutMs = 5 * 60 * 1000; // 5 minutes timeout
-		console.log(`⏰ Starting document processing with ${timeoutMs/1000}s timeout for ${fileName}`);
+		// Process document with Gemini embeddings (with dynamic timeout based on file size)
+		const stats = await fs.stat(filePath);
+		const fileSizeMB = stats.size / (1024 * 1024);
+		
+		// Dynamic timeout based on estimated processing time
+		// For 186 chunks: ~13 batches × 3s per batch + 12 × 2s delays = ~63s processing time
+		// Add significant buffer for network delays and API rate limits
+		const estimatedChunks = Math.ceil(fileSizeMB * 100); // Rough estimate: 100 chunks per MB
+		const estimatedBatches = Math.ceil(estimatedChunks / 10); // 10 chunks per batch
+		const estimatedProcessingMs = (estimatedBatches * 5000) + ((estimatedBatches - 1) * 2000); // 5s per batch + 2s delays
+		
+		// Add generous buffer: 5 minutes base + estimated time + 50% buffer
+		const baseTimeoutMs = 5 * 60 * 1000; // 5 minutes base
+		const bufferMultiplier = 1.5; // 50% buffer
+		const maxTimeoutMs = 30 * 60 * 1000; // 30 minutes max
+		const timeoutMs = Math.min(baseTimeoutMs + (estimatedProcessingMs * bufferMultiplier), maxTimeoutMs);
+		
+		console.log(`⏰ Starting document processing for ${fileName} (${fileSizeMB.toFixed(2)} MB)`);
+		console.log(`⏰ Timeout set to ${Math.round(timeoutMs/1000)}s (${Math.round(timeoutMs/60000)} minutes)`);
 		
 		await Promise.race([
 			DocumentService.processDocument(filePath, fileName, fileId, workspaceId),

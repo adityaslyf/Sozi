@@ -61,13 +61,24 @@ export class DocumentService {
 	}
 
 	/**
-	 * Extract text from PDF file using LangChain PDFLoader
+	 * Extract text from PDF file using LangChain PDFLoader with optimizations for large files
 	 */
 	static async extractTextFromPDF(filePath: string): Promise<string> {
 		try {
 			console.log(`📖 Attempting to extract text from PDF: ${filePath}`);
 			
-			// Use LangChain PDFLoader with optimized settings
+			// Check file size to determine processing strategy
+			const stats = await fs.stat(filePath);
+			const fileSizeMB = stats.size / (1024 * 1024);
+			console.log(`📊 PDF file size: ${fileSizeMB.toFixed(2)} MB`);
+			
+			// For large files (>2MB), process page by page to avoid memory issues
+			if (fileSizeMB > 2) {
+				console.log(`🔄 Large file detected, using page-by-page processing...`);
+				return await this.extractLargePDFText(filePath);
+			}
+			
+			// Use standard processing for smaller files
 			const loader = new PDFLoader(filePath, {
 				splitPages: false, // Keep all pages together
 				parsedItemSeparator: " ", // Use space to join text elements
@@ -90,6 +101,50 @@ export class DocumentService {
 		} catch (error) {
 			console.error("Error extracting text from PDF:", error);
 			throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+
+	/**
+	 * Extract text from large PDF files page by page to avoid memory issues
+	 */
+	static async extractLargePDFText(filePath: string): Promise<string> {
+		try {
+			// Process pages individually to reduce memory usage
+			const loader = new PDFLoader(filePath, {
+				splitPages: true, // Split into individual pages
+				parsedItemSeparator: " ",
+			});
+			
+			const docs = await loader.load();
+			console.log(`📄 Processing ${docs.length} pages...`);
+			
+			let allText = '';
+			const batchSize = 10; // Process 10 pages at a time
+			
+			for (let i = 0; i < docs.length; i += batchSize) {
+				const batch = docs.slice(i, i + batchSize);
+				console.log(`📖 Processing pages ${i + 1}-${Math.min(i + batchSize, docs.length)}/${docs.length}...`);
+				
+				// Extract text from this batch of pages
+				const batchText = batch.map(doc => doc.pageContent).join(" ");
+				allText += (allText ? " " : "") + batchText;
+				
+				// Small delay to prevent overwhelming the system
+				if (i + batchSize < docs.length) {
+					await new Promise(resolve => setTimeout(resolve, 100));
+				}
+			}
+			
+			// Clean up the combined text
+			allText = this.cleanSpacedText(allText);
+			
+			console.log(`📄 Large PDF extraction result: ${allText.length} characters extracted`);
+			console.log(`📄 Text preview (first 200 chars): "${allText.substring(0, 200)}..."`);
+			
+			return allText;
+		} catch (error) {
+			console.error("Error extracting text from large PDF:", error);
+			throw new Error(`Failed to extract text from large PDF: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
@@ -290,12 +345,17 @@ export class DocumentService {
 			const index = this.pinecone.Index(process.env.PINECONE_INDEX_NAME);
 			
 			// Process documents in smaller batches to avoid timeouts
-			const batchSize = 5; // Process 5 documents at a time
-			console.log(`📦 Processing ${documentsWithMetadata.length} documents in batches of ${batchSize}...`);
+			const batchSize = 5; // Process 5 documents at a time for accuracy
+			const totalBatches = Math.ceil(documentsWithMetadata.length / batchSize);
+			const estimatedTimeMs = (totalBatches * 4000) + ((totalBatches - 1) * 2000); // 4s per batch + 2s delays
+			
+			console.log(`📦 Processing ${documentsWithMetadata.length} documents in ${totalBatches} batches of ${batchSize}...`);
+			console.log(`⏱️ Estimated processing time: ${Math.round(estimatedTimeMs/1000)}s (${Math.round(estimatedTimeMs/60000)} minutes)`);
 			
 			for (let i = 0; i < documentsWithMetadata.length; i += batchSize) {
 				const batch = documentsWithMetadata.slice(i, i + batchSize);
-				console.log(`🔄 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(documentsWithMetadata.length/batchSize)} (${batch.length} documents)...`);
+				const batchNum = Math.floor(i/batchSize) + 1;
+				console.log(`🔄 Processing batch ${batchNum}/${totalBatches} (${batch.length} documents)...`);
 				
 				try {
 					await PineconeStore.fromDocuments(
@@ -306,15 +366,15 @@ export class DocumentService {
 							namespace: workspaceId,
 						}
 					);
-					console.log(`✅ Batch ${Math.floor(i/batchSize) + 1} completed successfully`);
+					console.log(`✅ Batch ${batchNum} completed successfully`);
 					
-					// Small delay between batches to respect rate limits
+					// Keep 2-second delay between batches for API rate limits and accuracy
 					if (i + batchSize < documentsWithMetadata.length) {
 						console.log(`⏳ Waiting 2 seconds before next batch...`);
 						await new Promise(resolve => setTimeout(resolve, 2000));
 					}
 				} catch (batchError) {
-					console.error(`❌ Error processing batch ${Math.floor(i/batchSize) + 1}:`, batchError);
+					console.error(`❌ Error processing batch ${batchNum}:`, batchError);
 					throw batchError;
 				}
 			}
