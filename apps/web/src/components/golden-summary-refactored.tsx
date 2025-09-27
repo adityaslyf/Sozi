@@ -474,7 +474,7 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
 
       const data = await response.json();
       if (data.success) {
-        const formattedQuestions = data.questions.map((q: { id: string; question: string; options: Array<{id: string; text: string; isCorrect: boolean}>; explanation: string; difficulty: string; topic: string; context?: string }) => ({
+        const formattedQuestions = data.questions.map((q: { id: string; question: string; options: any; explanation: string; difficulty: string; topic: string; context?: string }) => ({
           id: q.id,
           question: q.question,
           options: q.options,
@@ -504,8 +504,6 @@ const GoldenSummary: React.FC<GoldenSummaryProps> = ({ fileId, fileName, workspa
   const handleMCQSessionComplete = (results: SessionResults) => {
     setSessionResults(results);
     toast.success(`Session completed! You scored ${results.score}/${results.totalQuestions} (${results.percentage}%)`);
-    
-    // Store results for future analytics
     console.log('MCQ Session Results:', results);
   };
 
