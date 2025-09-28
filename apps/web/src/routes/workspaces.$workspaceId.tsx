@@ -279,21 +279,12 @@ function WorkspaceDetail() {
 								</div>
 
 								{/* File List - Compact */}
-								<div className="space-y-2">
-									<div className="flex items-center justify-between bg-[#243137] rounded-xl border border-white/10 p-2.5 shadow-lg">
-										<h2 className="text-white font-semibold text-sm">All Materials</h2>
-										<div className="flex items-center gap-1">
-											<button className="px-2 py-1 rounded-md text-xs bg-[#bd9f67] text-[#1a1f2e] border border-[#bd9f67] font-medium">Grid</button>
-											<button className="px-2 py-1 rounded-md text-xs text-white hover:text-[#bd9f67] bg-white/10 border border-white/20 hover:bg-white/20 backdrop-blur-sm">List</button>
-										</div>
-									</div>
-									<div className="rounded-xl border border-white/10 bg-[#243137] overflow-hidden shadow-lg">
-										<FileList 
-											workspaceId={workspaceId} 
-											refreshTrigger={refreshTrigger}
-											onViewSummary={handleViewSummary}
-										/>
-									</div>
+								<div className="rounded-xl border border-white/10 bg-[#243137] overflow-hidden shadow-lg">
+									<FileList 
+										workspaceId={workspaceId} 
+										refreshTrigger={refreshTrigger}
+										onViewSummary={handleViewSummary}
+									/>
 								</div>
 							</div>
 						</div>
