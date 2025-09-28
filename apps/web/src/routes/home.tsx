@@ -86,105 +86,84 @@ function HomePage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Welcome Section */}
-              <div className="text-center space-y-4">
-                <h1 className="text-4xl font-bold text-gray-900">
-                  Welcome back, <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{user?.name?.split(" ")[0] || "User"}</span>
-                  <span className="ml-2">👋</span>
-                </h1>
-                <p className="text-gray-600 text-lg">Continue your learning journey</p>
-              </div>
 
-              {/* Workspaces Grid */}
-              {workspaces.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                  {workspaces.map((workspace, index) => {
-                    const workspaceStyles = [
-                      { 
-                        bg: "from-blue-500/10 to-indigo-500/10", 
-                        border: "border-blue-200/50", 
-                        iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600", 
-                        icon: "👨‍💻",
-                        accent: "text-blue-600"
-                      },
-                      { 
-                        bg: "from-green-500/10 to-emerald-500/10", 
-                        border: "border-green-200/50", 
-                        iconBg: "bg-gradient-to-br from-green-500 to-emerald-600", 
-                        icon: "📊",
-                        accent: "text-green-600"
-                      },
-                      { 
-                        bg: "from-purple-500/10 to-violet-500/10", 
-                        border: "border-purple-200/50", 
-                        iconBg: "bg-gradient-to-br from-purple-500 to-violet-600", 
-                        icon: "🎨",
-                        accent: "text-purple-600"
-                      },
-                      { 
-                        bg: "from-orange-500/10 to-red-500/10", 
-                        border: "border-orange-200/50", 
-                        iconBg: "bg-gradient-to-br from-orange-500 to-red-600", 
-                        icon: "📈",
-                        accent: "text-orange-600"
-                      }
-                    ];
-                    
-                    const style = workspaceStyles[index % workspaceStyles.length];
-                    const isActive = index === 0;
-                    
-                    return (
-                      <Link 
-                        key={workspace.id} 
-                        to="/workspaces/$workspaceId" 
-                        params={{ workspaceId: workspace.id }} 
-                        className="group block"
-                      >
-                        <div className={`relative bg-gradient-to-br ${style.bg} backdrop-blur-sm rounded-3xl border ${style.border} p-8 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1`}>
-                          {isActive && (
-                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center justify-between mb-6">
-                            <div className={`w-16 h-16 ${style.iconBg} rounded-2xl flex items-center justify-center shadow-lg text-2xl`}>
-                              {style.icon}
-                            </div>
-                            <div className={`text-xs font-semibold px-3 py-1 rounded-full ${isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                              {isActive ? 'Active' : 'Inactive'}
-                            </div>
-                          </div>
-                          
-                          <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-gray-700 transition-colors">
-                            {workspace.name}
-                          </h2>
-                          <p className="text-gray-600 mb-6 leading-relaxed">
-                            {workspace.description || 'No description available'}
-                          </p>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <div className="text-sm text-gray-500">Score</div>
-                              <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-pink-400 rounded-full" style={{ width: '60%' }}></div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm text-gray-500">Exam</div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {new Date(workspace.createdAt).toLocaleDateString('en-US', {
-                                  day: 'numeric',
-                                  month: 'short'
-                                })}
-                              </div>
-                            </div>
-                          </div>
+                      {/* Workspaces Grid */}
+                      {workspaces.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                          {workspaces.map((workspace, index) => {
+                            const workspaceStyles = [
+                              { 
+                                name: "DEV",
+                                bottomText: "development space"
+                              },
+                              { 
+                                name: "DATA",
+                                bottomText: "analytics hub"
+                              },
+                              { 
+                                name: "DESIGN",
+                                bottomText: "creative studio"
+                              },
+                              { 
+                                name: "MARKETING",
+                                bottomText: "growth center"
+                              }
+                            ];
+                            
+                            const style = workspaceStyles[index % workspaceStyles.length];
+                            const isActive = index === 0;
+                            
+                            return (
+                              <Link 
+                                key={workspace.id} 
+                                to="/workspaces/$workspaceId" 
+                                params={{ workspaceId: workspace.id }} 
+                                className="group block"
+                              >
+                                <div className="workspace-card w-[300px] h-[200px] bg-[#243137] relative grid place-content-center rounded-[10px] overflow-hidden transition-all duration-500 ease-in-out hover:rounded-none hover:scale-110">
+                                  {/* Border */}
+                                  <div className="workspace-border absolute inset-0 border-2 border-[#bd9f67] opacity-0 rotate-[10deg] transition-all duration-500 ease-in-out group-hover:inset-[15px] group-hover:opacity-100 group-hover:rotate-0"></div>
+                                  
+                                  {/* Content */}
+                                  <div className="workspace-content transition-all duration-500 ease-in-out">
+                                    {/* Logo Container */}
+                                    <div className="workspace-logo h-[35px] relative w-[33px] overflow-hidden transition-all duration-1000 ease-in-out group-hover:w-[134px]">
+                                      {/* Logo 1 - Workspace Initial */}
+                                      <div className="workspace-logo1 h-[33px] absolute left-0 bg-[#bd9f67] rounded-lg flex items-center justify-center text-[#243137] font-bold text-lg min-w-[33px]">
+                                        {workspace.name.charAt(0).toUpperCase()}
+                                      </div>
+                                      
+                                      {/* Logo 2 - Full Name */}
+                                      <div className="workspace-logo2 h-[33px] absolute left-[33px] flex items-center">
+                                        <span className="text-[#bd9f67] font-bold text-sm tracking-wider px-2">
+                                          {style.name}
+                                        </span>
+                                      </div>
+                                      
+                                      {/* Trail Animation */}
+                                      <span className="workspace-trail absolute right-0 h-full w-full opacity-0 group-hover:animate-pulse"></span>
+                                    </div>
+                                    
+                                    {/* Logo Bottom Text */}
+                                    <span className="workspace-logo-bottom-text absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-[30px] text-[#bd9f67] pl-2 text-[11px] opacity-0 transition-all duration-500 ease-in-out delay-500 group-hover:opacity-100 group-hover:tracking-[9.5px]">
+                                      {workspace.name.toLowerCase()}
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Bottom Text */}
+                                  <span className="workspace-bottom-text absolute left-1/2 bottom-[13px] transform -translate-x-1/2 text-[6px] uppercase px-[5px] pl-2 text-[#bd9f67] bg-[#243137] opacity-0 tracking-[7px] transition-all duration-500 ease-in-out group-hover:tracking-[3px] group-hover:opacity-100">
+                                    {style.bottomText}
+                                  </span>
+
+                                  {/* Active Indicator */}
+                                  {isActive && (
+                                    <div className="absolute top-4 right-4 w-2 h-2 bg-[#bd9f67] rounded-full animate-pulse"></div>
+                                  )}
+                                </div>
+                              </Link>
+                            );
+                          })}
                         </div>
-                      </Link>
-                    );
-                  })}
-                </div>
               ) : (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-6">

@@ -141,23 +141,24 @@ function WorkspaceDetail() {
 
 					{/* Navigation */}
 					<nav className="space-y-2">
+						<div className="opacity-60 mb-4 text-xs font-medium tracking-wider" style={{ color: "var(--corp-muted)" }}>MENU</div>
 						{[
-							{ id: 'overview', label: 'Overview' },
-							{ id: 'files', label: 'Files' },
-							{ id: 'notes', label: 'Notes' },
-							{ id: 'exercises', label: 'Exercises' },
+							{ id: 'overview', label: 'Overview', icon: '📊' },
+							{ id: 'files', label: 'Files', icon: '📁' },
+							{ id: 'notes', label: 'Notes', icon: '📝' },
+							{ id: 'exercises', label: 'Exercises', icon: '🏋️' },
 						].map((item) => (
 							<button
 								key={item.id}
 								onClick={() => setActiveTab(item.id)}
-								className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+								className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
 									activeTab === item.id
 										? 'corp-nav-active shadow-sm'
-										: 'corp-nav-item hover:corp-nav-hover'
+										: 'corp-nav-item hover:corp-nav-hover opacity-70'
 								}`}
 							>
-								<div className="w-1.5 h-1.5 rounded-full bg-white/70"></div>
-								{item.label}
+								<span className="text-base">{item.icon}</span>
+								<span className="font-medium">{item.label}</span>
 							</button>
 						))}
 					</nav>
@@ -252,6 +253,7 @@ function WorkspaceDetail() {
 										<MetricCard title="Summaries" value={3} />
 									</div>
 								)}
+
 							</div>
 
 							{/* Right Rail - Onboarding Tasks */}
