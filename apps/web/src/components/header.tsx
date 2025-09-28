@@ -10,12 +10,6 @@ export default function Header() {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const links = [
-        { to: "#benefits", label: "Benefits" },
-        { to: "#specs", label: "Specifications" },
-        { to: "#howto", label: "How-to" },
-        { to: "#contact", label: "Contact Us" },
-    ] as const;
 
     useEffect(() => {
         // Initialize Google Auth when component mounts
@@ -65,48 +59,40 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
-            <div className="mx-auto max-w-6xl px-4">
-                <div className="flex h-16 items-center justify-between">
-                    <Link to="/" className="text-xl font-semibold">Sozi</Link>
-
-                    <nav className="hidden md:flex items-center gap-8 text-sm">
-                        {links.map(({ to, label }) => (
-                            <a key={to} href={to} className="hover:opacity-70">
-                                {label}
-                            </a>
-                        ))}
-                    </nav>
+        <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-fit">
+            <div className="backdrop-blur-lg bg-white/20 border border-white/30 rounded-full shadow-xl px-6 py-3">
+                <div className="flex items-center gap-8">
+                    <Link to="/" className="text-lg font-bold text-gray-800">Sozi</Link>
 
                     <div className="hidden md:flex items-center gap-3">
                         {isLoggedIn ? (
                             <>
-                                <Link to="/dashboard" className="text-sm hover:opacity-70">
+                                <Link to="/dashboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
                                     Dashboard
                                 </Link>
-                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
-                                    <User className="w-4 h-4" />
-                                    <span className="text-sm font-medium">{user?.name || 'User'}</span>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/30 backdrop-blur-sm">
+                                    <User className="w-4 h-4 text-gray-600" />
+                                    <span className="text-sm font-medium text-gray-800">{user?.name || 'User'}</span>
                                 </div>
-                                <Button variant="outline" className="rounded-full px-4" onClick={handleLogout}>
-                                    <LogOut className="w-4 h-4 mr-2" />
+                                <Button variant="outline" className="rounded-full px-4 py-1.5 text-sm bg-white/20 border-white/30 hover:bg-white/30" onClick={handleLogout}>
+                                    <LogOut className="w-3 h-3 mr-1" />
                                     Sign Out
                                 </Button>
                             </>
                         ) : (
-                            <Button className="rounded-full px-5 bg-primary hover:bg-primary/90 text-white" size="lg" onClick={handleGoogleAuth}>
-                                <Chrome className="w-4 h-4 mr-2" />
-                                Sign in with Google
+                            <Button className="rounded-full px-4 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-white" onClick={handleGoogleAuth}>
+                                <Chrome className="w-3 h-3 mr-1" />
+                                Sign in
                             </Button>
                         )}
                     </div>
 
                     <button
                         aria-label="Open Menu"
-                        className="md:hidden rounded-md p-2 border"
+                        className="md:hidden rounded-full p-2 bg-white/20 border border-white/30"
                         onClick={() => setOpen(true)}
                     >
-                        <Menu className="size-5" />
+                        <Menu className="w-4 h-4 text-gray-700" />
                     </button>
                 </div>
             </div>
@@ -123,13 +109,6 @@ export default function Header() {
                             >
                                 <X className="size-5" />
                             </button>
-                        </div>
-                        <div className="mt-6 divide-y">
-                            {links.map(({ to, label }) => (
-                                <a key={to} href={to} onClick={() => setOpen(false)} className="block py-4 text-lg">
-                                    {label}
-                                </a>
-                            ))}
                         </div>
                         <div className="mt-6 space-y-3">
                             {isLoggedIn ? (

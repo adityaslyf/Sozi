@@ -102,13 +102,13 @@ function Dashboard() {
   }
 
   return (
-    <main className="corp-theme min-h-screen" style={{ background: "var(--corp-bg)" }}>
-      <div className="grid grid-cols-12 gap-4 md:gap-6 lg:gap-8 px-3 md:px-4 lg:px-6 py-4 lg:py-8 max-w-[1600px] mx-auto">
+    <main className="corp-theme min-h-screen lg:h-screen lg:overflow-hidden" style={{ background: "var(--corp-bg)" }}>
+      <div className="grid grid-cols-12 gap-4 md:gap-6 lg:gap-8 px-3 md:px-4 lg:px-6 pt-24 pb-4 min-h-screen lg:h-full max-w-[1600px] mx-auto">
         {/* Sidebar Component */}
         <Sidebar />
 
         {/* Main Content */}
-        <section className="col-span-12 lg:col-span-10 xl:col-span-10 grid xl:grid-cols-12 lg:grid-cols-12 grid-cols-1 gap-4 md:gap-6 lg:gap-8 items-start">
+        <section className="col-span-12 lg:col-span-10 xl:col-span-10 grid xl:grid-cols-12 lg:grid-cols-12 grid-cols-1 gap-4 md:gap-6 lg:gap-8 items-start lg:h-full lg:overflow-y-auto">
           {loading ? (
             <div className="col-span-12 h-[60vh] grid place-items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "var(--corp-text)" }} />
@@ -121,7 +121,7 @@ function Dashboard() {
           ) : (
             <>
             {/* Main Content - 3 Row Layout */}
-            <div className="xl:col-span-8 lg:col-span-7 col-span-12 grid grid-cols-12 gap-4 md:gap-6">
+            <div className="xl:col-span-8 lg:col-span-7 col-span-12 grid grid-cols-12 gap-4 md:gap-6 lg:h-full lg:overflow-y-auto content-start">
               
               {/* ROW 1: Hero + Working Format + Activity */}
               <div className="col-span-12 lg:col-span-4">
@@ -152,7 +152,7 @@ function Dashboard() {
             </div>
 
             {/* Right Rail - Todo List */}
-            <div className="xl:col-span-4 lg:col-span-5 col-span-12 sticky top-6">
+            <div className="xl:col-span-4 lg:col-span-5 col-span-12">
               <TodoListCard glass />
             </div>
             </>

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
 	return (
-		<main className="min-h-[200vh] bg-white text-foreground">
+		<main className="min-h-[200vh] bg-white text-foreground pt-24">
 			<Hero />
 			<Benefits />
 			<BigPicture />

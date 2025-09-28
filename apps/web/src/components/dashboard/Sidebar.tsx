@@ -1,6 +1,6 @@
 export function Sidebar() {
   return (
-    <aside className="hidden lg:block col-span-2 xl:col-span-2 corp-sidebar p-6 sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto">
+    <aside className="hidden lg:block col-span-2 xl:col-span-2 corp-sidebar p-6 h-full overflow-y-auto">
       <div className="flex items-center gap-3 mb-8">
         <div className="corp-pill w-9 h-9 grid place-items-center text-black text-sm font-bold shadow-sm">AI</div>
         <div className="font-bold tracking-wide text-base">SOZI</div>

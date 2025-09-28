@@ -6,14 +6,13 @@ export function CalendarCard() {
   const timeSlots = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '13:00 PM'];
 
   return (
-    <div className="corp-glass p-2 group hover:scale-[1.01] transition-all duration-300">
+    <div className="card relative p-4 hover:scale-[0.97] active:scale-[0.9] transition-all duration-400 backdrop-blur-lg bg-white/25 border border-white/40 rounded-[2.5em] shadow-xl">
       <div className="flex items-center justify-between mb-2">
         <button className="corp-pill px-1.5 py-0.5 text-[9px] font-medium opacity-70 hover:opacity-100 hover:scale-105 transition-all duration-200">
           ← JAN
         </button>
         <div className="flex items-center gap-1.5">
-          <div className="text-sm">📅</div>
-          <h3 className="font-bold text-xs" style={{ color: "var(--corp-text)" }}>
+          <h3 className="font-bold text-sm" style={{ color: "var(--corp-text)" }}>
             {currentMonth}
           </h3>
         </div>

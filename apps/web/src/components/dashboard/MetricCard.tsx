@@ -16,34 +16,42 @@ export function MetricCard({ title, value }: MetricCardProps) {
 
   const getIcon = (title: string) => {
     switch (title.toLowerCase()) {
-      case 'files': return '📁';
-      case 'notes': return '📝';
-      case 'exercises': return '🏋️';
-      case 'summaries': return '📊';
-      default: return '📈';
+      case 'files': return 'Files';
+      case 'notes': return 'Notes';
+      case 'exercises': return 'Exercises';
+      case 'summaries': return 'Summaries';
+      default: return 'Metric';
+    }
+  };
+
+  const getCardColor = (title: string) => {
+    switch (title.toLowerCase()) {
+      case 'files': return 'bg-white/25 border-white/40';
+      case 'notes': return 'bg-green-50/40 border-green-200/50';
+      case 'exercises': return 'bg-purple-50/40 border-purple-200/50';
+      case 'summaries': return 'bg-yellow-50/40 border-yellow-200/50';
+      default: return 'bg-white/25 border-white/40';
     }
   };
 
   return (
-    <div className="corp-glass corp-metric-card p-4 group cursor-pointer hover:scale-[1.02] transition-all duration-300">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="text-lg">{getIcon(title)}</div>
-          <p className="text-xs font-semibold opacity-80" style={{ color: "var(--corp-muted)" }}>{title}</p>
+    <div className={`card relative p-6 cursor-pointer hover:scale-[0.97] active:scale-[0.9] transition-all duration-400 backdrop-blur-lg ${getCardColor(title)} border rounded-[2.5em] shadow-xl`}>
+      <div className="card-content flex flex-col justify-between gap-16 h-full transition-transform duration-400 hover:scale-[0.96]">
+        <div className="card-top flex justify-between">
+          <span className="card-title font-bold text-sm" style={{ color: "var(--corp-muted)" }}>{getIcon(title)}</span>
+          <div className="w-2.5 h-2.5 rounded-full opacity-70" 
+               style={{ background: getAccentColor(title) }}></div>
         </div>
-        <div className="w-2.5 h-2.5 rounded-full opacity-70 group-hover:opacity-100 transition-opacity" 
-             style={{ background: getAccentColor(title) }}></div>
-      </div>
-      <p className="text-3xl font-black group-hover:scale-105 transition-transform duration-200 mb-3" 
-         style={{ color: "var(--corp-text)" }}>
-        {value}
-      </p>
-      <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-1000 delay-300 shadow-sm"
-             style={{ 
-               width: `${Math.min(value * 10, 100)}%`, 
-               background: `linear-gradient(90deg, ${getAccentColor(title)}, ${getAccentColor(title)}aa)`
-             }}></div>
+        <div className="card-bottom flex justify-between items-end">
+          <p className="text-3xl font-bold m-0" style={{ color: "var(--corp-text)" }}>{value}</p>
+          <div className="h-1.5 w-16 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-1000"
+                 style={{ 
+                   width: `${Math.min(value * 10, 100)}%`, 
+                   background: `linear-gradient(90deg, ${getAccentColor(title)}, ${getAccentColor(title)}aa)`
+                 }}></div>
+          </div>
+        </div>
       </div>
     </div>
   );
