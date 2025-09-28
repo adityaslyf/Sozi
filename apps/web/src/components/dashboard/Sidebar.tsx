@@ -59,79 +59,95 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="hidden lg:block col-span-2 xl:col-span-2 corp-sidebar p-6 h-full overflow-y-auto">
+    <aside className="hidden lg:flex w-20 corp-sidebar p-4 h-full overflow-y-auto flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="corp-pill w-9 h-9 grid place-items-center text-black text-sm font-bold shadow-sm">AI</div>
-        <div className="font-bold tracking-wide text-base">SOZI</div>
+      <div className="flex flex-col items-center mb-6">
+        <div className="corp-pill w-10 h-10 grid place-items-center text-black text-xs font-bold shadow-sm mb-2">AI</div>
+        <div className="font-bold text-xs text-center text-white/90">SOZI</div>
       </div>
 
-      {/* Home Section */}
-      <div className="mb-8">
-        <Link 
-          to="/home" 
-          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
-            location.pathname === '/home' 
-              ? 'bg-pink-500 text-white shadow-lg' 
-              : 'bg-white/10 text-white/70 hover:bg-white/20'
-          }`}
-        >
-          <Home className="w-5 h-5" />
-        </Link>
-      </div>
+      {/* Navigation Section */}
+      <div className="flex-1 space-y-6">
+        {/* Home Section */}
+        <div className="flex flex-col items-center">
+          <Link 
+            to="/home" 
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 mb-2 ${
+              location.pathname === '/home' 
+                ? 'bg-pink-500 text-white shadow-lg' 
+                : 'bg-white/10 text-white/70 hover:bg-white/20'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+          </Link>
+          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">HOME</span>
+        </div>
 
-      {/* Workspaces Section */}
-      <div className="space-y-3 mb-8">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-12 h-12 bg-white/10 rounded-full animate-pulse" />
-            ))}
+        {/* Workspaces Section */}
+        <div className="flex flex-col items-center">
+          <div className="space-y-3 mb-2">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-12 h-12 bg-white/10 rounded-full animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <>
+                {workspaces.map((workspace, index) => {
+                  const isActive = location.pathname.includes(`/workspaces/${workspace.id}`);
+                  return (
+                    <Link
+                      key={workspace.id}
+                      to="/workspaces/$workspaceId"
+                      params={{ workspaceId: workspace.id }}
+                      className={`flex items-center justify-center w-12 h-12 rounded-full text-white font-semibold text-sm transition-all duration-200 ${
+                        isActive 
+                          ? `${getWorkspaceColor(index)} shadow-lg scale-110` 
+                          : `${getWorkspaceColor(index)} opacity-70 hover:opacity-100 hover:scale-105`
+                      }`}
+                      title={workspace.name}
+                    >
+                      {getWorkspaceInitial(workspace.name)}
+                    </Link>
+                  );
+                })}
+                
+                {/* Add New Workspace */}
+                <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200 hover:scale-105">
+                  <Plus className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
-        ) : (
-          <>
-            {workspaces.map((workspace, index) => {
-              const isActive = location.pathname.includes(`/workspaces/${workspace.id}`);
-              return (
-                <Link
-                  key={workspace.id}
-                  to="/workspaces/$workspaceId"
-                  params={{ workspaceId: workspace.id }}
-                  className={`flex items-center justify-center w-12 h-12 rounded-full text-white font-semibold text-sm transition-all duration-200 ${
-                    isActive 
-                      ? `${getWorkspaceColor(index)} shadow-lg scale-110` 
-                      : `${getWorkspaceColor(index)} opacity-70 hover:opacity-100 hover:scale-105`
-                  }`}
-                  title={workspace.name}
-                >
-                  {getWorkspaceInitial(workspace.name)}
-                </Link>
-              );
-            })}
-            
-            {/* Add New Workspace */}
-            <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200 hover:scale-105">
-              <Plus className="w-5 h-5" />
-            </button>
-          </>
-        )}
+          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">SPACES</span>
+        </div>
       </div>
 
       {/* Bottom Section */}
-      <div className="mt-auto space-y-3">
-        {/* Chat/Support */}
-        <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200">
-          <span className="text-lg">💬</span>
-        </button>
-        
-        {/* Help */}
-        <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200">
-          <span className="text-lg">❓</span>
-        </button>
-        
-        {/* Profile */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-gray-800 font-semibold text-sm">
-          AV
+      <div className="space-y-6">
+        {/* Tools Section */}
+        <div className="flex flex-col items-center">
+          <div className="space-y-3 mb-2">
+            {/* Chat/Support */}
+            <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200">
+              <span className="text-lg">💬</span>
+            </button>
+            
+            {/* Help */}
+            <button className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200">
+              <span className="text-lg">❓</span>
+            </button>
+          </div>
+          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">TOOLS</span>
+        </div>
+
+        {/* Profile Section */}
+        <div className="flex flex-col items-center pt-4 border-t border-white/10">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white text-gray-800 font-semibold text-sm mb-2">
+            AV
+          </div>
+          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">PROFILE</span>
         </div>
       </div>
     </aside>
