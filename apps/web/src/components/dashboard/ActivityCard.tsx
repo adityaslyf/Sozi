@@ -8,11 +8,11 @@ export function ActivityCard() {
     data.map((p, i) => `${i === 0 ? 'M' : 'L'} ${i * 28} ${100 - (p / max) * 80}`).join(' ');
 
   return (
-    <div className="corp-glass p-6 group hover:scale-[1.01] transition-all duration-300">
-      <div className="flex items-center justify-between mb-6">
+    <div className="corp-glass p-4 group hover:scale-[1.01] transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-xl">📈</div>
-          <h3 className="font-bold text-lg" style={{ color: "var(--corp-text)" }}>Activity Overview</h3>
+          <h3 className="font-bold text-base" style={{ color: "var(--corp-text)" }}>Activity Overview</h3>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <div className="flex items-center gap-1">
@@ -26,8 +26,8 @@ export function ActivityCard() {
         </div>
       </div>
       
-      <div className="h-40 rounded-2xl corp-surface-soft p-4 relative overflow-hidden group-hover:shadow-inner transition-shadow duration-300">
-        <svg width="100%" height="120" className="absolute inset-4">
+      <div className="h-36 rounded-2xl corp-surface-soft p-3 relative overflow-hidden group-hover:shadow-inner transition-shadow duration-300">
+        <svg width="100%" height="108" className="absolute inset-3">
           {/* Grid lines */}
           <defs>
             <pattern id="grid" width="28" height="20" patternUnits="userSpaceOnUse">
@@ -64,7 +64,7 @@ export function ActivityCard() {
         </svg>
       </div>
       
-      <div className="mt-4 flex items-center justify-between text-xs opacity-70" style={{ color: "var(--corp-muted)" }}>
+      <div className="mt-3 flex items-center justify-between text-xs opacity-70" style={{ color: "var(--corp-muted)" }}>
         <span>Last 10 days</span>
         <span>Trending up ↗</span>
       </div>

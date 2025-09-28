@@ -53,21 +53,21 @@ export function TodoListCard({ glass = false }: TodoListCardProps) {
   };
 
   return (
-    <div className={`p-6 ${glass ? 'corp-glass' : 'corp-surface'} h-fit hover:scale-[1.01] transition-all duration-300`}>
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="text-xl">✅</div>
+    <div className={`p-3 ${glass ? 'corp-glass' : 'corp-surface'} h-fit hover:scale-[1.01] transition-all duration-300`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="text-base">✅</div>
           <div>
-            <h3 className="text-xl font-bold" style={{ color: "var(--corp-text)" }}>Onboarding tasks</h3>
-            <p className="text-xs opacity-70 mt-1" style={{ color: "var(--corp-muted)" }}>
+            <h3 className="text-base font-bold" style={{ color: "var(--corp-text)" }}>Onboarding tasks</h3>
+            <p className="text-[10px] opacity-70 mt-0.5" style={{ color: "var(--corp-muted)" }}>
               {items.filter(i => !i.done).length} remaining
             </p>
           </div>
         </div>
-        <div className="text-2xl font-black" style={{ color: "var(--corp-text)" }}>{progress}%</div>
+        <div className="text-xl font-black" style={{ color: "var(--corp-text)" }}>{progress}%</div>
       </div>
       
-      <div className="h-4 rounded-full corp-surface-soft overflow-hidden mb-6 shadow-inner">
+      <div className="h-3 rounded-full corp-surface-soft overflow-hidden mb-4 shadow-inner">
         <div className="h-full rounded-full transition-all duration-1000 shadow-sm" 
              style={{ 
                width: `${progress}%`, 
@@ -75,26 +75,26 @@ export function TodoListCard({ glass = false }: TodoListCardProps) {
              }} />
       </div>
       
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-80 overflow-y-auto">
         {items.map((it, idx) => (
-          <div key={idx} className="corp-task-item flex items-center gap-4 p-4 rounded-2xl corp-surface-soft group cursor-pointer hover:shadow-md transition-all duration-200">
+          <div key={idx} className="corp-task-item flex items-center gap-3 p-3 rounded-xl corp-surface-soft group cursor-pointer hover:shadow-md transition-all duration-200">
             <div className="relative">
-              <img src={it.img} className="w-14 h-14 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-200" />
-              <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${getPriorityColor(it.priority)} shadow-sm`}></div>
+              <img src={it.img} className="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-200" />
+              <div className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${getPriorityColor(it.priority)} shadow-sm`}></div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className={`font-bold text-sm truncate transition-all duration-200 ${
+              <div className={`font-bold text-xs truncate transition-all duration-200 ${
                 it.done ? 'line-through opacity-70' : 'group-hover:translate-x-1'
               }`} style={{ color: "var(--corp-text)" }}>
                 {it.title}
               </div>
-              <div className="text-xs mt-1 font-medium opacity-70 flex items-center gap-2" 
+              <div className="text-[10px] mt-0.5 font-medium opacity-70 flex items-center gap-1.5" 
                    style={{ color: "var(--corp-text-secondary)" }}>
                 <span>📅</span>
                 <span>{it.time}</span>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full grid place-items-center flex-shrink-0 text-sm font-bold transition-all duration-200 shadow-sm ${
+            <div className={`w-6 h-6 rounded-full grid place-items-center flex-shrink-0 text-xs font-bold transition-all duration-200 shadow-sm ${
               it.done
                 ? 'bg-green-500 text-white scale-110 animate-pulse'
                 : 'border-2 border-gray-300 hover:border-green-400 hover:bg-green-50 hover:scale-110'
@@ -105,8 +105,8 @@ export function TodoListCard({ glass = false }: TodoListCardProps) {
         ))}
       </div>
       
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <div className="flex items-center justify-between text-xs opacity-70" style={{ color: "var(--corp-muted)" }}>
+      <div className="mt-4 pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between text-[10px] opacity-70" style={{ color: "var(--corp-muted)" }}>
           <span>Updated 2 mins ago</span>
           <span>Keep going! 🚀</span>
         </div>

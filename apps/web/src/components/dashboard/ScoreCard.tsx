@@ -17,11 +17,11 @@ interface ScoreCardProps {
 
 export function ScoreCard({ analytics }: ScoreCardProps) {
   return (
-    <div className="corp-glass p-6 group hover:scale-[1.01] transition-all duration-300">
-      <div className="flex items-center justify-between mb-6">
+    <div className="corp-glass p-4 group hover:scale-[1.01] transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-xl">🎯</div>
-          <h3 className="font-bold text-xl" style={{ color: "var(--corp-text)" }}>Score Performance</h3>
+          <h3 className="font-bold text-lg" style={{ color: "var(--corp-text)" }}>Score Performance</h3>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></div>
@@ -31,7 +31,7 @@ export function ScoreCard({ analytics }: ScoreCardProps) {
         </div>
       </div>
       
-      <div className="corp-progress-bar h-10 w-full rounded-full overflow-hidden mb-6 shadow-inner">
+      <div className="corp-progress-bar h-8 w-full rounded-full overflow-hidden mb-4 shadow-inner">
         <div
           className="corp-progress-fill h-full rounded-full flex items-center justify-end pr-4"
           style={{ width: `${analytics?.score.averagePercentage ?? 0}%` }}
@@ -42,15 +42,15 @@ export function ScoreCard({ analytics }: ScoreCardProps) {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-6">
-        <div className="text-center p-4 corp-surface-soft rounded-xl">
-          <div className="text-2xl font-black mb-1" style={{ color: "var(--corp-text)" }}>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="text-center p-3 corp-surface-soft rounded-xl">
+          <div className="text-xl font-black mb-1" style={{ color: "var(--corp-text)" }}>
             {analytics?.score.averagePercentage ?? 0}%
           </div>
           <div className="text-xs opacity-60 font-medium" style={{ color: "var(--corp-muted)" }}>Average Score</div>
         </div>
-        <div className="text-center p-4 corp-surface-soft rounded-xl">
-          <div className="text-2xl font-black mb-1" style={{ color: "var(--corp-text)" }}>
+        <div className="text-center p-3 corp-surface-soft rounded-xl">
+          <div className="text-xl font-black mb-1" style={{ color: "var(--corp-text)" }}>
             {analytics?.score.bestPercentage ?? 0}%
           </div>
           <div className="text-xs opacity-60 font-medium" style={{ color: "var(--corp-muted)" }}>Best Score</div>

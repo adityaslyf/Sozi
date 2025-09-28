@@ -103,12 +103,12 @@ function Dashboard() {
 
   return (
     <main className="corp-theme min-h-screen" style={{ background: "var(--corp-bg)" }}>
-      <div className="grid grid-cols-12 gap-3 md:gap-4 lg:gap-6 px-3 md:px-4 lg:px-6 py-4 lg:py-6 max-w-[1600px] mx-auto">
+      <div className="grid grid-cols-12 gap-4 md:gap-6 lg:gap-8 px-3 md:px-4 lg:px-6 py-4 lg:py-8 max-w-[1600px] mx-auto">
         {/* Sidebar Component */}
         <Sidebar />
 
-        {/* Enhanced Main Content */}
-        <section className="col-span-12 lg:col-span-10 xl:col-span-10 grid xl:grid-cols-12 lg:grid-cols-12 grid-cols-1 gap-3 md:gap-4 lg:gap-6 items-start">
+        {/* Main Content */}
+        <section className="col-span-12 lg:col-span-10 xl:col-span-10 grid xl:grid-cols-12 lg:grid-cols-12 grid-cols-1 gap-4 md:gap-6 lg:gap-8 items-start">
           {loading ? (
             <div className="col-span-12 h-[60vh] grid place-items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "var(--corp-text)" }} />
@@ -120,47 +120,38 @@ function Dashboard() {
             </div>
           ) : (
             <>
-            {/* Left Content Grid */}
-            <div className="xl:col-span-8 lg:col-span-7 col-span-12 min-w-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 md:gap-4 lg:gap-6">
-              {/* Hero Section - Full Width */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-12">
+            {/* Main Content - 3 Row Layout */}
+            <div className="xl:col-span-8 lg:col-span-7 col-span-12 grid grid-cols-12 gap-4 md:gap-6">
+              
+              {/* ROW 1: Hero + Working Format + Activity */}
+              <div className="col-span-12 lg:col-span-4">
                 <HeroCard userName={user?.name || "User"} userImage={user?.picture} />
               </div>
-              
-              {/* Working Format - Full Width */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-12">
+              <div className="col-span-12 lg:col-span-4">
                 <WorkingFormatCard />
               </div>
+              <div className="col-span-12 lg:col-span-4">
+                <ActivityCard />
+              </div>
 
-              {/* Metrics Grid - Responsive */}
-              <div className="col-span-1 md:col-span-1 lg:col-span-3">
+              {/* ROW 2: 4 Metric Cards in horizontal row (small) */}
+              <div className="col-span-12 grid grid-cols-4 gap-3">
                 <MetricCard title="Files" value={analytics?.files ?? 0} />
-              </div>
-              <div className="col-span-1 md:col-span-1 lg:col-span-3">
                 <MetricCard title="Notes" value={analytics?.notes ?? 0} />
-              </div>
-              <div className="col-span-1 md:col-span-1 lg:col-span-3">
                 <MetricCard title="Exercises" value={analytics?.exercises ?? 0} />
-              </div>
-              <div className="col-span-1 md:col-span-1 lg:col-span-3">
                 <MetricCard title="Summaries" value={analytics?.summaries ?? 0} />
               </div>
 
-              {/* Score Card - Full Width */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-12">
-                <ScoreCard analytics={analytics} />
-              </div>
-              
-              {/* Activity and Calendar - Side by Side on Large Screens */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-6">
-                <ActivityCard />
-              </div>
-              <div className="col-span-1 md:col-span-2 lg:col-span-6">
+              {/* ROW 3: Calendar + Score Card */}
+              <div className="col-span-12 lg:col-span-8">
                 <CalendarCard />
+              </div>
+              <div className="col-span-12 lg:col-span-4">
+                <ScoreCard analytics={analytics} />
               </div>
             </div>
 
-            {/* Right Rail - Enhanced Glass Panel */}
+            {/* Right Rail - Todo List */}
             <div className="xl:col-span-4 lg:col-span-5 col-span-12 sticky top-6">
               <TodoListCard glass />
             </div>
