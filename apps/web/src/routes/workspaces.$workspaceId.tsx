@@ -124,51 +124,90 @@ function WorkspaceDetail() {
 		<main className="corp-theme min-h-screen lg:h-screen lg:overflow-hidden" style={{ background: "var(--corp-bg)" }}>
 			<div className="grid grid-cols-12 gap-4 md:gap-6 lg:gap-8 px-3 md:px-4 lg:px-6 pt-24 pb-4 min-h-screen lg:h-full max-w-[1600px] mx-auto">
 				{/* Sidebar Component */}
-				<div className="hidden lg:block col-span-2 xl:col-span-2 corp-sidebar p-6 h-full overflow-y-auto">
-					<div className="flex items-center gap-3 mb-8">
-						<div className="corp-pill w-9 h-9 grid place-items-center text-black text-sm font-bold shadow-sm">
+				<div className="hidden lg:flex w-20 corp-sidebar p-4 h-full overflow-y-auto flex-col">
+					{/* Header */}
+					<div className="flex flex-col items-center mb-6">
+						<div className="corp-pill w-10 h-10 grid place-items-center text-black text-xs font-bold shadow-sm mb-2">
 							{workspace.name.charAt(0).toUpperCase()}
 						</div>
-						<div>
-							<div className="font-semibold text-sm" style={{ color: "var(--corp-text)" }}>
-								{workspace.name}
-							</div>
-							<div className="text-xs opacity-70" style={{ color: "var(--corp-muted)" }}>
-								Workspace
-							</div>
+						<div className="font-bold text-xs text-center text-white/90">{workspace.name}</div>
+					</div>
+
+					{/* Navigation Section */}
+					<div className="flex-1 space-y-6">
+						{/* Overview Section */}
+						<div className="flex flex-col items-center">
+							<button
+								onClick={() => setActiveTab('overview')}
+								className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 mb-2 ${
+									activeTab === 'overview'
+										? 'bg-blue-500 text-white shadow-lg'
+										: 'bg-white/10 text-white/70 hover:bg-white/20'
+								}`}
+							>
+								<span className="text-lg">📊</span>
+							</button>
+							<span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">OVERVIEW</span>
+						</div>
+
+						{/* Files Section */}
+						<div className="flex flex-col items-center">
+							<button
+								onClick={() => setActiveTab('files')}
+								className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 mb-2 ${
+									activeTab === 'files'
+										? 'bg-green-500 text-white shadow-lg'
+										: 'bg-white/10 text-white/70 hover:bg-white/20'
+								}`}
+							>
+								<span className="text-lg">📁</span>
+							</button>
+							<span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">FILES</span>
+						</div>
+
+						{/* Notes Section */}
+						<div className="flex flex-col items-center">
+							<button
+								onClick={() => setActiveTab('notes')}
+								className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 mb-2 ${
+									activeTab === 'notes'
+										? 'bg-purple-500 text-white shadow-lg'
+										: 'bg-white/10 text-white/70 hover:bg-white/20'
+								}`}
+							>
+								<span className="text-lg">📝</span>
+							</button>
+							<span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">NOTES</span>
+						</div>
+
+						{/* Exercises Section */}
+						<div className="flex flex-col items-center">
+							<button
+								onClick={() => setActiveTab('exercises')}
+								className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 mb-2 ${
+									activeTab === 'exercises'
+										? 'bg-orange-500 text-white shadow-lg'
+										: 'bg-white/10 text-white/70 hover:bg-white/20'
+								}`}
+							>
+								<span className="text-lg">🏋️</span>
+							</button>
+							<span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">EXERCISES</span>
 						</div>
 					</div>
 
-					{/* Navigation */}
-					<nav className="space-y-2">
-						<div className="opacity-60 mb-4 text-xs font-medium tracking-wider" style={{ color: "var(--corp-muted)" }}>MENU</div>
-						{[
-							{ id: 'overview', label: 'Overview', icon: '📊' },
-							{ id: 'files', label: 'Files', icon: '📁' },
-							{ id: 'notes', label: 'Notes', icon: '📝' },
-							{ id: 'exercises', label: 'Exercises', icon: '🏋️' },
-						].map((item) => (
-							<button
-								key={item.id}
-								onClick={() => setActiveTab(item.id)}
-								className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-									activeTab === item.id
-										? 'corp-nav-active shadow-sm'
-										: 'corp-nav-item hover:corp-nav-hover opacity-70'
-								}`}
+					{/* Bottom Section */}
+					<div className="space-y-6">
+						{/* Back to Home */}
+						<div className="flex flex-col items-center pt-4 border-t border-white/10">
+							<Link 
+								to="/home" 
+								className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-200 mb-2"
 							>
-								<span className="text-base">{item.icon}</span>
-								<span className="font-medium">{item.label}</span>
-							</button>
-						))}
-					</nav>
-
-					{/* Back to Home */}
-					<div className="mt-8 pt-6 border-t border-white/10">
-						<Link to="/home" className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
-							<ArrowLeft className="w-4 h-4" />
-							Back to Home
-						</Link>
+								<ArrowLeft className="w-4 h-4" />
+							</Link>
+							<span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">HOME</span>
+						</div>
 					</div>
 				</div>
 
