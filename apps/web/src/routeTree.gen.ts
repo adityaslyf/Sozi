@@ -10,6 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as NotesRouteImport } from './routes/notes'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as FilesRouteImport } from './routes/files'
+import { Route as ExercisesRouteImport } from './routes/exercises'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces.index'
@@ -18,6 +23,31 @@ import { Route as WorkspacesWorkspaceIdRouteImport } from './routes/workspaces.$
 const WorkspacesRoute = WorkspacesRouteImport.update({
   id: '/workspaces',
   path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotesRoute = NotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FilesRoute = FilesRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExercisesRoute = ExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -44,6 +74,11 @@ const WorkspacesWorkspaceIdRoute = WorkspacesWorkspaceIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/exercises': typeof ExercisesRoute
+  '/files': typeof FilesRoute
+  '/home': typeof HomeRoute
+  '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/workspaces/$workspaceId': typeof WorkspacesWorkspaceIdRoute
   '/workspaces/': typeof WorkspacesIndexRoute
@@ -51,6 +86,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/exercises': typeof ExercisesRoute
+  '/files': typeof FilesRoute
+  '/home': typeof HomeRoute
+  '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/workspaces/$workspaceId': typeof WorkspacesWorkspaceIdRoute
   '/workspaces': typeof WorkspacesIndexRoute
 }
@@ -58,6 +98,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/exercises': typeof ExercisesRoute
+  '/files': typeof FilesRoute
+  '/home': typeof HomeRoute
+  '/notes': typeof NotesRoute
+  '/settings': typeof SettingsRoute
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/workspaces/$workspaceId': typeof WorkspacesWorkspaceIdRoute
   '/workspaces/': typeof WorkspacesIndexRoute
@@ -67,15 +112,34 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/exercises'
+    | '/files'
+    | '/home'
+    | '/notes'
+    | '/settings'
     | '/workspaces'
     | '/workspaces/$workspaceId'
     | '/workspaces/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/workspaces/$workspaceId' | '/workspaces'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/exercises'
+    | '/files'
+    | '/home'
+    | '/notes'
+    | '/settings'
+    | '/workspaces/$workspaceId'
+    | '/workspaces'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/exercises'
+    | '/files'
+    | '/home'
+    | '/notes'
+    | '/settings'
     | '/workspaces'
     | '/workspaces/$workspaceId'
     | '/workspaces/'
@@ -84,6 +148,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ExercisesRoute: typeof ExercisesRoute
+  FilesRoute: typeof FilesRoute
+  HomeRoute: typeof HomeRoute
+  NotesRoute: typeof NotesRoute
+  SettingsRoute: typeof SettingsRoute
   WorkspacesRoute: typeof WorkspacesRouteWithChildren
 }
 
@@ -94,6 +163,41 @@ declare module '@tanstack/react-router' {
       path: '/workspaces'
       fullPath: '/workspaces'
       preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notes': {
+      id: '/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof NotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/files': {
+      id: '/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof FilesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exercises': {
+      id: '/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof ExercisesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -144,6 +248,11 @@ const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ExercisesRoute: ExercisesRoute,
+  FilesRoute: FilesRoute,
+  HomeRoute: HomeRoute,
+  NotesRoute: NotesRoute,
+  SettingsRoute: SettingsRoute,
   WorkspacesRoute: WorkspacesRouteWithChildren,
 }
 export const routeTree = rootRouteImport

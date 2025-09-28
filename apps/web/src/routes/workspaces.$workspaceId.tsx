@@ -1,13 +1,21 @@
 import { createFileRoute, useParams, Link } from '@tanstack/react-router';
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Folder } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { googleAuth } from '@/lib/google-auth';
 import AUTH_CONFIG from '@/config/auth';
 import { toast } from 'sonner';
 import FileUpload from '@/components/file-upload';
 import FileList from '@/components/file-list';
 import GoldenSummary from '@/components/golden-summary';
+import { 
+  WorkingFormatCard,
+  CalendarCard,
+  MetricCard,
+  TodoListCard,
+  ActivityCard,
+  HeroCard
+} from '@/components/dashboard';
 
 interface Workspace {
 	id: string;
@@ -23,6 +31,7 @@ function WorkspaceDetail() {
 	const [loading, setLoading] = useState(true);
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
 	const [selectedFile, setSelectedFile] = useState<{ id: string; name: string } | null>(null);
+	const [activeTab, setActiveTab] = useState('overview');
 
 	// Check if user is logged in
 	const isLoggedIn = googleAuth.isLoggedIn();
@@ -112,82 +121,148 @@ function WorkspaceDetail() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="max-w-6xl mx-auto">
-				{/* Header */}
-				<div className="flex items-center gap-4 mb-8">
-					<Button variant="outline" size="sm" asChild>
-						<Link to="/workspaces" className="flex items-center gap-2">
+		<main className="corp-theme min-h-screen lg:h-screen lg:overflow-hidden" style={{ background: "var(--corp-bg)" }}>
+			<div className="grid grid-cols-12 gap-4 md:gap-6 lg:gap-8 px-3 md:px-4 lg:px-6 pt-24 pb-4 min-h-screen lg:h-full max-w-[1600px] mx-auto">
+				{/* Sidebar Component */}
+				<div className="hidden lg:block col-span-2 xl:col-span-2 corp-sidebar p-6 h-full overflow-y-auto">
+					<div className="flex items-center gap-3 mb-8">
+						<div className="corp-pill w-9 h-9 grid place-items-center text-black text-sm font-bold shadow-sm">
+							{workspace.name.charAt(0).toUpperCase()}
+						</div>
+						<div>
+							<div className="font-semibold text-sm" style={{ color: "var(--corp-text)" }}>
+								{workspace.name}
+							</div>
+							<div className="text-xs opacity-70" style={{ color: "var(--corp-muted)" }}>
+								Workspace
+							</div>
+						</div>
+					</div>
+
+					{/* Navigation */}
+					<nav className="space-y-2">
+						{[
+							{ id: 'overview', label: 'Overview' },
+							{ id: 'files', label: 'Files' },
+							{ id: 'notes', label: 'Notes' },
+							{ id: 'exercises', label: 'Exercises' },
+						].map((item) => (
+							<button
+								key={item.id}
+								onClick={() => setActiveTab(item.id)}
+								className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+									activeTab === item.id
+										? 'corp-nav-active shadow-sm'
+										: 'corp-nav-item hover:corp-nav-hover'
+								}`}
+							>
+								<div className="w-1.5 h-1.5 rounded-full bg-white/70"></div>
+								{item.label}
+							</button>
+						))}
+					</nav>
+
+					{/* Back to Home */}
+					<div className="mt-8 pt-6 border-t border-white/10">
+						<Link to="/home" className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
 							<ArrowLeft className="w-4 h-4" />
-							Back to Workspaces
+							Back to Home
 						</Link>
-					</Button>
-				</div>
-
-				<div className="flex items-center gap-4 mb-8">
-					<div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-						<Folder className="w-6 h-6 text-primary" />
-					</div>
-					<div>
-						<h1 className="text-3xl font-bold">{workspace.name}</h1>
-						{workspace.description && (
-							<p className="text-gray-600 mt-1">{workspace.description}</p>
-						)}
-						<p className="text-sm text-gray-500 mt-2">
-							Created {new Date(workspace.createdAt).toLocaleDateString()}
-						</p>
 					</div>
 				</div>
 
-				{/* Content */}
-				{selectedFile ? (
-					/* Summary View */
-					<div className="space-y-6">
-						<div className="flex items-center gap-4 mb-6">
-							<Button variant="outline" onClick={handleBackToFiles}>
-								<ArrowLeft className="w-4 h-4 mr-2" />
-								Back to Files
-							</Button>
-							<div>
-								<h2 className="text-xl font-semibold">Golden Summary</h2>
-								<p className="text-gray-600">{selectedFile.name}</p>
+				{/* Main Content */}
+				<section className="col-span-12 lg:col-span-10 xl:col-span-10 grid xl:grid-cols-12 lg:grid-cols-12 grid-cols-1 gap-4 md:gap-6 lg:gap-8 items-start lg:h-full lg:overflow-y-auto">
+					{selectedFile ? (
+						/* Summary View */
+						<div className="col-span-12 space-y-6">
+							<div className="flex items-center gap-4 mb-6">
+								<Button variant="outline" onClick={handleBackToFiles}>
+									<ArrowLeft className="w-4 h-4 mr-2" />
+									Back to Files
+								</Button>
+								<div>
+									<h2 className="text-xl font-semibold">Golden Summary</h2>
+									<p className="text-gray-600">{selectedFile.name}</p>
+								</div>
 							</div>
+							<GoldenSummary 
+								fileId={selectedFile.id}
+								fileName={selectedFile.name}
+								workspaceId={workspaceId}
+							/>
 						</div>
-						<GoldenSummary 
-							fileId={selectedFile.id}
-							fileName={selectedFile.name}
-							workspaceId={workspaceId}
-						/>
-					</div>
-				) : (
-					/* File Management View */
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-						{/* File Upload */}
-						<div className="space-y-6">
-							<div>
-								<h2 className="text-xl font-semibold mb-4">Upload Materials</h2>
-								<FileUpload 
-									workspaceId={workspaceId} 
-									onUploadComplete={handleUploadComplete}
-								/>
-							</div>
-						</div>
+					) : (
+						<>
+							{/* Main Content - Dashboard Layout */}
+							<div className="xl:col-span-8 lg:col-span-7 col-span-12 grid grid-cols-12 gap-4 md:gap-6 lg:h-full lg:overflow-y-auto content-start">
+								
+								{/* ROW 1: Hero + Working Format + Activity */}
+								<div className="col-span-12 lg:col-span-4">
+									<HeroCard 
+										userName={workspace.name} 
+										userImage={undefined}
+									/>
+								</div>
+								<div className="col-span-12 lg:col-span-4">
+									<WorkingFormatCard />
+								</div>
+								<div className="col-span-12 lg:col-span-4">
+									<ActivityCard />
+								</div>
 
-						{/* File List */}
-						<div className="space-y-6">
-							<div>
-								<h2 className="text-xl font-semibold mb-4">Study Materials</h2>
-								<FileList 
-									workspaceId={workspaceId} 
-									refreshTrigger={refreshTrigger}
-									onViewSummary={handleViewSummary}
-								/>
+								{/* ROW 2: File Upload + File List OR Calendar based on active tab */}
+								{activeTab === 'files' && (
+									<>
+										<div className="col-span-12 lg:col-span-6">
+											<div className="corp-glass p-6 rounded-3xl">
+												<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--corp-text)" }}>Upload Materials</h2>
+												<FileUpload 
+													workspaceId={workspaceId} 
+													onUploadComplete={handleUploadComplete}
+												/>
+											</div>
+										</div>
+										<div className="col-span-12 lg:col-span-6">
+											<div className="corp-glass p-6 rounded-3xl">
+												<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--corp-text)" }}>Study Materials</h2>
+												<FileList 
+													workspaceId={workspaceId} 
+													refreshTrigger={refreshTrigger}
+													onViewSummary={handleViewSummary}
+												/>
+											</div>
+										</div>
+									</>
+								)}
+
+								{/* ROW 2: Calendar (for overview tab) */}
+								{activeTab === 'overview' && (
+									<div className="col-span-12">
+										<CalendarCard />
+									</div>
+								)}
+
+								{/* ROW 3: Metrics Cards */}
+								{activeTab === 'overview' && (
+									<div className="col-span-12 grid grid-cols-4 gap-3">
+										<MetricCard title="Files" value={4} />
+										<MetricCard title="Notes" value={12} />
+										<MetricCard title="Exercises" value={8} />
+										<MetricCard title="Summaries" value={3} />
+									</div>
+								)}
 							</div>
-						</div>
-					</div>
-				)}
+
+							{/* Right Rail - Onboarding Tasks */}
+							<div className="xl:col-span-4 lg:col-span-5 col-span-12">
+								<TodoListCard glass />
+							</div>
+						</>
+					)}
+				</section>
 			</div>
-		</div>
+		</main>
 	);
 }
 
