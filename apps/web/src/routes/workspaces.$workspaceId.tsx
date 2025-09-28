@@ -232,6 +232,72 @@ function WorkspaceDetail() {
 								workspaceId={workspaceId}
 							/>
 						</div>
+					) : activeTab === 'files' ? (
+						/* Dedicated Full-Width Files Layout (restored) */
+						<>
+						<div className="col-span-12 p-4 space-y-4">
+							{/* Hero Header - Compact */}
+							<div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#243137] p-4 shadow-lg">
+								<div className="absolute inset-0 bg-gradient-to-br from-[#bd9f67]/5 to-transparent" />
+								<div className="relative flex flex-col gap-4">
+									<div className="flex items-center justify-between gap-4">
+										<div>
+											<h1 className="text-xl font-bold text-white">Study Materials</h1>
+											<p className="text-[#bd9f67] text-xs mt-1">Smart uploads, golden summaries, quick actions</p>
+										</div>
+										<div className="flex items-center gap-2">
+											<button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm">Import</button>
+											<button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#bd9f67] text-[#1a1f2e] hover:brightness-110 shadow-md transition-all">Upload Files</button>
+										</div>
+									</div>
+									<div className="flex flex-col md:flex-row gap-2">
+										<div className="relative flex-1">
+											<svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+											</svg>
+											<input className="w-full bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#bd9f67]/50 focus:border-[#bd9f67]/50 transition backdrop-blur-sm" placeholder="Search files, titles, or dates..." />
+										</div>
+										<div className="flex items-center gap-1.5 flex-wrap">
+											<button className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#bd9f67] text-[#1a1f2e] border border-[#bd9f67]">All</button>
+											<button className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm">PDF</button>
+											<button className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm">DOCX</button>
+											<button className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-green-400 border border-white/20 hover:bg-white/20 backdrop-blur-sm">Ready</button>
+											<button className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-[#bd9f67] border border-white/20 hover:bg-white/20 backdrop-blur-sm">Summaries</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Upload & File List Row */}
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+								{/* Upload Component Only */}
+								<div className="scale-75 origin-top-left">
+									<FileUpload 
+										workspaceId={workspaceId} 
+										onUploadComplete={handleUploadComplete}
+									/>
+								</div>
+
+								{/* File List - Compact */}
+								<div className="space-y-2">
+									<div className="flex items-center justify-between bg-[#243137] rounded-xl border border-white/10 p-2.5 shadow-lg">
+										<h2 className="text-white font-semibold text-sm">All Materials</h2>
+										<div className="flex items-center gap-1">
+											<button className="px-2 py-1 rounded-md text-xs bg-[#bd9f67] text-[#1a1f2e] border border-[#bd9f67] font-medium">Grid</button>
+											<button className="px-2 py-1 rounded-md text-xs text-white hover:text-[#bd9f67] bg-white/10 border border-white/20 hover:bg-white/20 backdrop-blur-sm">List</button>
+										</div>
+									</div>
+									<div className="rounded-xl border border-white/10 bg-[#243137] overflow-hidden shadow-lg">
+										<FileList 
+											workspaceId={workspaceId} 
+											refreshTrigger={refreshTrigger}
+											onViewSummary={handleViewSummary}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+						</>
 					) : (
 						<>
 							{/* Main Content - Dashboard Layout */}
@@ -250,31 +316,6 @@ function WorkspaceDetail() {
 								<div className="col-span-12 lg:col-span-4">
 									<ActivityCard />
 								</div>
-
-								{/* ROW 2: File Upload + File List OR Calendar based on active tab */}
-								{activeTab === 'files' && (
-									<>
-										<div className="col-span-12 lg:col-span-6">
-											<div className="corp-glass p-6 rounded-3xl">
-												<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--corp-text)" }}>Upload Materials</h2>
-												<FileUpload 
-													workspaceId={workspaceId} 
-													onUploadComplete={handleUploadComplete}
-												/>
-											</div>
-										</div>
-										<div className="col-span-12 lg:col-span-6">
-											<div className="corp-glass p-6 rounded-3xl">
-												<h2 className="text-xl font-semibold mb-4" style={{ color: "var(--corp-text)" }}>Study Materials</h2>
-												<FileList 
-													workspaceId={workspaceId} 
-													refreshTrigger={refreshTrigger}
-													onViewSummary={handleViewSummary}
-												/>
-											</div>
-										</div>
-									</>
-								)}
 
 								{/* ROW 2: Calendar (for overview tab) */}
 								{activeTab === 'overview' && (
